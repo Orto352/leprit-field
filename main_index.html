@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEPRIT — Customs Inventory Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f11;
+    --surface: #161719;
+    --surface2: #1e2023;
+    --surface3: #26292d;
+    --border: #2e3135;
+    --border2: #3a3f45;
+    --amber: #f59e0b;
+    --amber-dim: #92600a;
+    --amber-glow: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-dim: #7f1d1d;
+    --green: #22c55e;
+    --green-dim: #14532d;
+    --blue: #3b82f6;
+    --blue-dim: #1e3a5f;
+    --text: #e8eaed;
+    --text2: #9ca3af;
+    --text3: #6b7280;
+    --font-display: 'Oswald', sans-serif;
+    --font-mono: 'Rajdhani', sans-serif;
+    --radius: 6px;
+    --radius-lg: 10px;
+    --transition: 150ms cubic-bezier(0.4,0,0.2,1);
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  /* ─── LIGHT MODE ─── */
+  html.light {
+    --bg: #f0f2f5;
+    --surface: #ffffff;
+    --surface2: #f5f6f8;
+    --surface3: #eaecf0;
+    --border: #dde1e8;
+    --border2: #c8cdd8;
+    --amber: #d97706;
+    --amber-dim: #fde68a;
+    --amber-glow: rgba(217,119,6,0.08);
+    --red: #dc2626;
+    --red-dim: #fecaca;
+    --green: #16a34a;
+    --green-dim: #bbf7d0;
+    --blue: #2563eb;
+    --blue-dim: #bfdbfe;
+    --text: #111827;
+    --text2: #4b5563;
+    --text3: #9ca3af;
+    --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  html.light ::-webkit-scrollbar-track { background: var(--bg); }
+  html.light ::-webkit-scrollbar-thumb { background: var(--border2); }
+
+  html.light .badge-draft { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  html.light .badge-progress { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+  html.light .badge-complete { background: #dcfce7; color: #14532d; border-color: #86efac; }
+  html.light .badge-pending { background: #f3f4f6; color: #374151; border-color: #d1d5db; }
+
+  html.light .task-card { box-shadow: var(--shadow); }
+  html.light .stat-card { box-shadow: var(--shadow); }
+  html.light .card { box-shadow: var(--shadow); }
+  html.light .modal { box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
+
+  html.light .btn-primary { background: var(--amber); color: #fff; }
+  html.light .btn-primary:hover { background: #b45309; }
+
+  html.light .nav-item.active {
+    background: #fef3c7;
+    color: var(--amber);
+    border-left-color: var(--amber);
+  }
+
+  html.light .merch-brand { color: var(--amber); }
+  html.light .td-ref { color: var(--amber); }
+  html.light .task-ref { color: var(--amber); }
+  html.light .dossier-ref { color: var(--text); }
+  html.light .logo-text { color: var(--amber); }
+  html.light .stat-card::after { background: var(--amber); opacity: 0.6; }
+
+  html.light .photo-count.has-photos { color: var(--green); border-color: #86efac; }
+
+  /* ─── THEME TOGGLE ─── */
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 10px 4px 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: all var(--transition);
+    user-select: none;
+  }
+  .theme-toggle:hover { border-color: var(--border2); background: var(--surface3); }
+
+  .toggle-track {
+    width: 32px;
+    height: 18px;
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: 99px;
+    position: relative;
+    transition: background var(--transition), border-color var(--transition);
+    flex-shrink: 0;
+  }
+  html.light .toggle-track {
+    background: var(--amber);
+    border-color: var(--amber);
+  }
+  .toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text3);
+    transition: transform 200ms cubic-bezier(0.4,0,0.2,1), background var(--transition);
+  }
+  html.light .toggle-thumb {
+    transform: translateX(14px);
+    background: #fff;
+  }
+  .toggle-label {
+    font-size: 10px;
+    color: var(--text2);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-mono);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+  /* ─── LAYOUT ─── */
+  .shell { display: flex; min-height: 100vh; }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    transition: transform var(--transition);
+  }
+
+  .logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--amber);
+  }
+  .logo-sub {
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .nav { padding: 12px 0; flex: 1; overflow-y: auto; }
+  .nav-section {
+    padding: 16px 12px 4px;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    cursor: pointer;
+    color: var(--text2);
+    transition: all var(--transition);
+    border-left: 2px solid transparent;
+    font-size: 12px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active {
+    background: var(--amber-glow);
+    color: var(--amber);
+    border-left-color: var(--amber);
+  }
+  .nav-icon { font-size: 14px; width: 18px; text-align: center; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--amber);
+    color: var(--bg);
+    font-size: 9px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 99px;
+  }
+
+  .sidebar-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .user-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--amber-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--amber);
+  }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 11px; color: var(--text); }
+  .user-role { font-size: 9px; color: var(--text3); }
+
+  /* ─── MAIN ─── */
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    height: 52px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar-title {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+  .topbar-meta {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+  }
+
+  .content { padding: 24px; flex: 1; }
+
+  /* ─── VIEWS ─── */
+  .view { display: none; animation: fadeIn 200ms ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--text);
+  }
+  .card-body { padding: 18px; }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all var(--transition);
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary {
+    background: var(--amber);
+    color: var(--bg);
+  }
+  .btn-primary:hover { background: #fbbf24; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border2);
+  }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+  .btn-danger {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid var(--red-dim);
+  }
+  .btn-danger:hover { background: rgba(239,68,68,0.1); }
+  .btn-sm { padding: 4px 10px; font-size: 10px; }
+  .btn-icon {
+    padding: 6px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-icon:hover { background: var(--surface2); color: var(--text); }
+
+  /* ─── STATUS BADGES ─── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-draft { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid var(--amber-dim); }
+  .badge-progress { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid var(--blue-dim); }
+  .badge-complete { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid var(--green-dim); }
+  .badge-pending { background: rgba(156,163,175,0.1); color: var(--text2); border: 1px solid var(--border); }
+
+  /* ─── FORM ELEMENTS ─── */
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-label {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .form-label.required::after { content: ' *'; color: var(--amber); }
+  .form-input, .form-select, .form-textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    transition: border-color var(--transition);
+    width: 100%;
+    outline: none;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--amber);
+    background: var(--surface3);
+  }
+  .form-select { cursor: pointer; }
+  .form-select option { background: var(--surface2); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+
+  /* ─── GRID ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+  /* ─── TASKS LIST ─── */
+  .tasks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .task-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+  .task-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+  .task-card.t-draft::before { background: var(--amber); }
+  .task-card.t-progress::before { background: var(--blue); }
+  .task-card.t-pending::before { background: var(--text3); }
+  .task-card.t-alert::before { background: var(--red); }
+  .task-card:hover { border-color: var(--border2); background: var(--surface2); transform: translateY(-1px); }
+  .task-ref {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--amber);
+    margin-bottom: 4px;
+  }
+  .task-type { font-size: 11px; color: var(--text2); margin-bottom: 8px; }
+  .task-meta { font-size: 10px; color: var(--text3); display: flex; align-items: center; justify-content: space-between; }
+
+  /* ─── DOSSIERS TABLE ─── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { border-bottom: 1px solid var(--border); }
+  th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  td {
+    padding: 11px 14px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background var(--transition); cursor: pointer; }
+  tbody tr:hover { background: var(--surface2); }
+  .td-ref {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--amber);
+  }
+  .td-mono { font-family: var(--font-mono); font-size: 11px; color: var(--text2); }
+  .qty-pill {
+    display: inline-flex;
+    align-items: center;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* ─── DOSSIER DETAIL ─── */
+  .dossier-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .dossier-ref {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .dossier-meta { font-size: 11px; color: var(--text2); }
+
+  /* ─── TABS ─── */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 4px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--text2);
+    transition: all var(--transition);
+    white-space: nowrap;
+    font-family: var(--font-mono);
+  }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active {
+    background: var(--amber);
+    color: var(--bg);
+    font-weight: 600;
+  }
+  .tab-num {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+  }
+  .tab.active .tab-num { background: rgba(0,0,0,0.2); }
+
+  .tab-panel { display: none; animation: fadeIn 200ms ease; }
+  .tab-panel.active { display: block; }
+
+  /* ─── MERCHANDISE TABLE ─── */
+  .merch-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .merch-search {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+  }
+  .merch-search input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px 12px 6px 32px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    outline: none;
+    transition: border-color var(--transition);
+  }
+  .merch-search input:focus { border-color: var(--amber); }
+  .merch-search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 12px;
+  }
+
+  .merch-table-wrap { overflow-x: auto; }
+  .merch-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+  .merch-table th {
+    padding: 8px 10px;
+    background: var(--surface2);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  .merch-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .merch-table tbody tr:hover { background: var(--surface2); }
+  .merch-table tbody tr:last-child td { border-bottom: none; }
+
+  .merch-brand {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--amber);
+  }
+  .merch-cn { font-size: 11px; color: var(--text3); }
+  .merch-qty {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .photo-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--text2);
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    transition: all var(--transition);
+  }
+  .photo-count:hover { border-color: var(--amber); color: var(--amber); }
+  .photo-count.has-photos { color: var(--green); border-color: var(--green-dim); }
+
+  /* ─── ADD MERCHANDISE MODAL ─── */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .modal-backdrop.open { display: flex; animation: fadeIn 150ms ease; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+  }
+  .modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .modal-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* ─── BRAND SEARCH DROPDOWN ─── */
+  .brand-search-wrap { position: relative; }
+  .brand-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    z-index: 50;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    display: none;
+  }
+  .brand-dropdown.open { display: block; }
+  .brand-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand-option:hover { background: var(--surface2); color: var(--amber); }
+  .brand-option.selected { background: var(--amber-glow); color: var(--amber); }
+
+  /* ─── CN CODE PICKER ─── */
+  .cn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .cn-option {
+    padding: 8px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 10px;
+    transition: all var(--transition);
+    line-height: 1.4;
+  }
+  .cn-option:hover { border-color: var(--amber-dim); background: var(--surface3); }
+  .cn-option.selected { border-color: var(--amber); background: var(--amber-glow); color: var(--amber); }
+  .cn-code { font-weight: 600; font-size: 11px; margin-bottom: 2px; }
+  .cn-label { color: var(--text2); font-size: 9px; }
+
+  /* ─── PHOTO UPLOAD ─── */
+  .photo-drop-zone {
+    border: 2px dashed var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .photo-drop-zone:hover, .photo-drop-zone.dragging {
+    border-color: var(--amber);
+    background: var(--amber-glow);
+  }
+  .photo-drop-icon { font-size: 32px; margin-bottom: 8px; }
+  .photo-drop-text { font-size: 12px; color: var(--text2); }
+  .photo-drop-sub { font-size: 10px; color: var(--text3); margin-top: 4px; }
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .photo-thumb {
+    aspect-ratio: 1;
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-thumb-del {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 18px; height: 18px;
+    background: rgba(239,68,68,0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    cursor: pointer;
+    color: white;
+    opacity: 0;
+    transition: opacity var(--transition);
+  }
+  .photo-thumb:hover .photo-thumb-del { opacity: 1; }
+
+  /* ─── CHECKLIST / FLAGS ─── */
+  .flag-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toggle-check {
+    appearance: none;
+    width: 16px; height: 16px;
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    background: var(--surface2);
+    cursor: pointer;
+    transition: all var(--transition);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .toggle-check:checked {
+    background: var(--amber);
+    border-color: var(--amber);
+  }
+  .toggle-check:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 9px;
+    color: var(--bg);
+    font-weight: 700;
+  }
+
+  /* ─── STATS ROW ─── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--amber);
+    opacity: 0.4;
+  }
+  .stat-label { font-size: 9px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+  .stat-sub { font-size: 10px; color: var(--text3); margin-top: 4px; }
+
+  /* ─── SIGNALÉTIQUE ─── */
+  .sig-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .sig-section-header {
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+  .sig-section-body { padding: 16px; }
+
+  /* ─── DOCS ─── */
+  .doc-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    transition: all var(--transition);
+    cursor: pointer;
+  }
+  .doc-item:hover { border-color: var(--border2); background: var(--surface2); }
+  .doc-icon { font-size: 20px; flex-shrink: 0; }
+  .doc-name { font-size: 12px; color: var(--text); flex: 1; }
+  .doc-meta { font-size: 10px; color: var(--text3); }
+
+  /* ─── UPLOAD ZONE (docs) ─── */
+  .doc-upload-zone {
+    border: 2px dashed var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition);
+    margin-bottom: 16px;
+  }
+  .doc-upload-zone:hover { border-color: var(--amber); background: var(--amber-glow); }
+
+  /* ─── PHOTO MODAL ─── */
+  .photos-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+  }
+  .photo-modal-thumb {
+    aspect-ratio: 1;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--text3);
+    cursor: pointer;
+    transition: border-color var(--transition);
+  }
+  .photo-modal-thumb:hover { border-color: var(--amber); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .topbar { padding: 0 16px; }
+    .content { padding: 16px; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .hamburger { display: flex !important; }
+    .tabs { gap: 1px; }
+    .tab { padding: 7px 8px; font-size: 10px; }
+    .cn-grid { grid-template-columns: 1fr; }
+  }
+  .hamburger {
+    display: none;
+    width: 32px; height: 32px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    margin-right: 8px;
+  }
+  .hamburger span {
+    display: block;
+    width: 18px; height: 2px;
+    background: var(--text2);
+    border-radius: 99px;
+    transition: all var(--transition);
+  }
+
+  /* ─── OVERLAY for mobile sidebar ─── */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+  }
+  .sidebar-overlay.open { display: block; }
+
+  /* ─── SUMMARY ─── */
+  .summary-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-key { font-size: 10px; color: var(--text3); }
+  .summary-val { font-size: 12px; color: var(--text); font-weight: 500; }
+
+  .submit-btn-wrap {
+    text-align: center;
+    padding: 24px 0 8px;
+  }
+  .submit-btn {
+    padding: 12px 40px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ─── ALERT ─── */
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    font-size: 12px;
+  }
+  .alert-warn { background: rgba(245,158,11,0.1); border: 1px solid var(--amber-dim); color: #fcd34d; }
+  .alert-info { background: rgba(59,130,246,0.1); border: 1px solid var(--blue-dim); color: #93c5fd; }
+  .alert-danger { background: rgba(239,68,68,0.1); border: 1px solid var(--red-dim); color: #fca5a5; }
+
+  .section-gap { margin-top: 24px; }
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-8 { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .text-amber { color: var(--amber); }
+  .text-sm { font-size: 11px; }
+  .text-xs { font-size: 10px; color: var(--text3); }
+  .font-display { font-family: var(--font-display); font-weight: 700; }
+
+  /* ─── SEARCH ─── */
+  .search-bar-wrap { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
+  .search-input-wrap { position: relative; flex: 1; }
+  .search-input { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 9px 36px 9px 14px; font-family: var(--font-mono); font-size: 13px; color: var(--text); width: 100%; outline: none; transition: border-color var(--transition); }
+  .search-input:focus { border-color: var(--amber); }
+  .search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text3); font-size: 14px; display: none; }
+  .search-hit { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--amber); border-radius: var(--radius-lg); padding: 12px 16px; margin-bottom: 8px; display: flex; gap: 14px; align-items: flex-start; transition: border-color var(--transition); }
+  .search-hit:hover { border-color: var(--amber); background: var(--surface2); }
+  .search-loc { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; padding-top: 2px; }
+  .search-box { background: var(--amber); color: var(--bg); font-family: var(--font-display); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: var(--radius); letter-spacing: 0.5px; white-space: nowrap; }
+  .search-par { background: var(--surface3); color: var(--text2); font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: var(--radius); border: 1px solid var(--border2); white-space: nowrap; }
+  .search-brand { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--amber); margin-bottom: 2px; }
+  .search-brand mark, .search-desc mark { background: rgba(245,158,11,0.2); color: var(--amber); border-radius: 2px; font-style: normal; }
+  .search-desc { font-size: 12px; color: var(--text2); }
+  .search-flags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .search-session-ref { font-size: 10px; color: var(--text3); margin-top: 4px; }
+  .search-summary { background: var(--amber-glow); border: 1px solid var(--amber-dim); border-radius: var(--radius); padding: 10px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .search-summary-label { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--amber); }
+  .search-empty { text-align: center; padding: 60px 20px; color: var(--text3); }
+  .search-empty-ic { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
+  @media print {
+    .sidebar,.topbar,.no-print { display: none !important; }
+    .main { margin-left: 0 !important; }
+    .view { display: block !important; }
+    .view:not(#view-search) { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-text">LEPRIT</div>
+      <div class="logo-sub">Customs Inventory</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">Workspace</div>
+      <div class="nav-item active" onclick="navigate('tasks')" id="nav-tasks">
+        <span class="nav-icon">⚡</span> Tasks
+        <span class="nav-badge">5</span>
+      </div>
+      <div class="nav-item" onclick="navigate('dossiers')" id="nav-dossiers">
+        <span class="nav-icon">📁</span> Dossiers
+      </div>
+      <div class="nav-item" onclick="navigate('search')" id="nav-search">
+        <span class="nav-icon">🔍</span> Search
+      </div>
+      <div class="nav-section">Reference</div>
+      <div class="nav-item" onclick="navigate('brands')" id="nav-brands">
+        <span class="nav-icon">🏷</span> Brands
+      </div>
+      <div class="nav-item" onclick="navigate('contacts')" id="nav-contacts">
+        <span class="nav-icon">📍</span> Contacts
+      </div>
+      <div class="nav-section">Operations</div>
+      <div class="nav-item" onclick="navigate('destruction')" id="nav-destruction">
+        <span class="nav-icon">🔥</span> Destruction
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar">SO</div>
+        <div class="user-info">
+          <div class="user-name">S. Ortolani</div>
+          <div class="user-role">Agent · UCS</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="hamburger" onclick="toggleSidebar()">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="topbar-title" id="topbarTitle">Task Queue</div>
+      <div class="topbar-meta" id="topbarMeta">03/04/2026 · 13:42</div>
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+        <span class="toggle-label" id="themeLabel">☾ Dark</span>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ══════════ TASKS VIEW ══════════ -->
+      <div class="view active" id="view-tasks">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Open Tasks</div>
+            <div class="stat-value">5</div>
+            <div class="stat-sub">Pending action</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Active Dossiers</div>
+            <div class="stat-value">3</div>
+            <div class="stat-sub">This month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Items Seized</div>
+            <div class="stat-value">684</div>
+            <div class="stat-sub">LU26DRAFT0002</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Overdue</div>
+            <div class="stat-value text-amber">1</div>
+            <div class="stat-sub">Requires action</div>
+          </div>
+        </div>
+
+        <div class="tasks-grid">
+          <div class="task-card t-alert" onclick="navigate('dossiers')">
+            <div class="task-ref">CARGO_1 2026</div>
+            <div class="task-type">📬 Communication sur dossier destruction</div>
+            <div class="task-meta">
+              <span>16 mars 2026 16:22</span>
+              <span class="badge badge-pending">Pending</span>
+            </div>
+          </div>
+          <div class="task-card t-pending" onclick="navigate('dossiers')">
+            <div class="task-ref">LU230510</div>
+            <div class="task-type">⏳ Main levée en attente</div>
+            <div class="task-meta">
+              <span>—</span>
+              <span class="badge badge-pending">Waiting</span>
+            </div>
+          </div>
+          <div class="task-card t-pending" onclick="navigate('dossiers')">
+            <div class="task-ref">LU240064</div>
+            <div class="task-type">⏳ Main levée en attente</div>
+            <div class="task-meta">
+              <span>—</span>
+              <span class="badge badge-pending">Waiting</span>
+            </div>
+          </div>
+          <div class="task-card t-pending" onclick="navigate('dossiers')">
+            <div class="task-ref">LU240227</div>
+            <div class="task-type">⏳ Main levée en attente</div>
+            <div class="task-meta">
+              <span>—</span>
+              <span class="badge badge-pending">Waiting</span>
+            </div>
+          </div>
+          <div class="task-card t-draft" onclick="openDossier()">
+            <div class="task-ref">LU26DRAFT0002</div>
+            <div class="task-type">✏️ Dossier en DRAFT</div>
+            <div class="task-meta">
+              <span>Created 21/03/2026</span>
+              <span class="badge badge-draft">Draft</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:right">
+          <button class="btn btn-primary" onclick="openDossier()">＋ New Dossier</button>
+        </div>
+      </div>
+
+      <!-- ══════════ DOSSIERS VIEW ══════════ -->
+      <div class="view" id="view-dossiers">
+        <div class="flex items-center justify-between gap-12" style="margin-bottom:16px">
+          <div>
+            <div class="font-display" style="font-size:20px">Dossiers</div>
+            <div class="text-xs mt-12">All seizure files</div>
+          </div>
+          <button class="btn btn-primary" onclick="openDossier()">＋ New Dossier</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">All Files</div>
+            <div style="display:flex;gap:8px">
+              <input class="form-input" style="width:180px" placeholder="Search ref…">
+              <button class="btn btn-ghost btn-sm">Filter</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>Bureau Ref</th>
+                  <th>Declarant</th>
+                  <th>Declarant Ref</th>
+                  <th>Created</th>
+                  <th>End Date</th>
+                  <th>Status</th>
+                  <th>Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr onclick="openDossier()">
+                  <td><div class="td-ref">LU26DRAFT0002</div></td>
+                  <td><div class="td-mono">CONSTAT DAD 2025_02336</div></td>
+                  <td>LUXCARGO HANDLING</td>
+                  <td><div class="td-mono">AWB 172-0382 2722</div></td>
+                  <td class="td-mono">21/03/2026</td>
+                  <td>—</td>
+                  <td><span class="badge badge-draft">Draft</span></td>
+                  <td><span class="qty-pill">684</span></td>
+                </tr>
+                <tr>
+                  <td><div class="td-ref">LU260082</div></td>
+                  <td><div class="td-mono">CONSTAT DAD 2025_02333</div></td>
+                  <td>LUXCARGO HANDLING</td>
+                  <td><div class="td-mono">AWB 172-0346 0995</div></td>
+                  <td class="td-mono">18/03/2026</td>
+                  <td class="td-mono" style="color:var(--red)">01/04/2026</td>
+                  <td><span class="badge badge-progress">In Progress</span></td>
+                  <td><span class="qty-pill">—</span></td>
+                </tr>
+                <tr>
+                  <td><div class="td-ref">LU260084</div></td>
+                  <td><div class="td-mono">CONSTAT DAD 2025_02335</div></td>
+                  <td>LUXCARGO HANDLING</td>
+                  <td><div class="td-mono">AWB 172-0407 0146</div></td>
+                  <td class="td-mono">20/03/2026</td>
+                  <td class="td-mono">14/04/2026</td>
+                  <td><span class="badge badge-progress">In Progress</span></td>
+                  <td><span class="qty-pill">—</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ DOSSIER DETAIL VIEW ══════════ -->
+      <div class="view" id="view-dossier-detail">
+        <div class="dossier-header">
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;cursor:pointer" onclick="navigate('dossiers')">← Back to Dossiers</div>
+            <div class="dossier-ref">LU26DRAFT0002</div>
+            <div class="dossier-meta">AWB 172-0382 2722 · LUXCARGO HANDLING · Created 21/03/2026</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span class="badge badge-draft">Draft</span>
+            <button class="btn btn-ghost btn-sm">Save</button>
+            <button class="btn btn-primary btn-sm">Submit →</button>
+          </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="tabs">
+          <div class="tab active" onclick="showTab(1)" id="tab1">
+            <span class="tab-num">1</span> Signalétique
+          </div>
+          <div class="tab" onclick="showTab(2)" id="tab2">
+            <span class="tab-num">2</span> Documents
+          </div>
+          <div class="tab" onclick="showTab(3)" id="tab3">
+            <span class="tab-num">3</span> Procédures
+          </div>
+          <div class="tab" onclick="showTab(4)" id="tab4">
+            <span class="tab-num">4</span> Photos
+          </div>
+          <div class="tab" onclick="showTab(5)" id="tab5">
+            <span class="tab-num">5</span> Résumé
+          </div>
+        </div>
+
+        <!-- TAB 1: SIGNALÉTIQUE -->
+        <div class="tab-panel active" id="panel1">
+          <div class="sig-section">
+            <div class="sig-section-header">📋 Identification</div>
+            <div class="sig-section-body">
+              <div class="grid-2" style="gap:16px">
+                <div class="form-group">
+                  <label class="form-label">Bureau</label>
+                  <div class="form-input" style="color:var(--text2)">Unité Contrôles sécuritaires — Service Contrôles aéroportuaires</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label required">Provenance</label>
+                  <select class="form-select">
+                    <option>Chine</option>
+                    <option>Hong Kong</option>
+                    <option>Turquie</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label required">Déclarant</label>
+                  <select class="form-select">
+                    <option>LUXCARGO HANDLING</option>
+                    <option>DHL</option>
+                    <option>FEDEX</option>
+                    <option>POST LOGISTICS</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Référence Bureau</label>
+                  <input class="form-input" value="CONSTAT DAD 2025_02336">
+                </div>
+                <div class="form-group">
+                  <label class="form-label required">Référence Déclarant</label>
+                  <input class="form-input" value="AWB 172-0382 2722" placeholder="AWB / HAWB…">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Commentaire Libre</label>
+                  <input class="form-input" placeholder="Free comment…">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2" style="gap:16px">
+            <div class="sig-section">
+              <div class="sig-section-header">📦 Exportateur</div>
+              <div class="sig-section-body" style="display:flex;flex-direction:column;gap:10px">
+                <div class="form-group">
+                  <label class="form-label">Company</label>
+                  <input class="form-input" value="Banzina Clothing Guangzhou CO LTD">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Address</label>
+                  <input class="form-input" value="B105-90 Nr8 Yancheng Road Shop 05">
+                </div>
+                <div class="grid-2" style="gap:10px">
+                  <div class="form-group">
+                    <label class="form-label">City</label>
+                    <input class="form-input" value="Guangzhou">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ZIP</label>
+                    <input class="form-input" value="0000">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Country</label>
+                  <select class="form-select"><option>Chine</option></select>
+                </div>
+              </div>
+            </div>
+            <div class="sig-section">
+              <div class="sig-section-header">🚚 Importateur</div>
+              <div class="sig-section-body" style="display:flex;flex-direction:column;gap:10px">
+                <div class="form-group">
+                  <label class="form-label">Company</label>
+                  <input class="form-input" value="QLS Logistics">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Address</label>
+                  <input class="form-input" value="20 Rendementsweg">
+                </div>
+                <div class="grid-2" style="gap:10px">
+                  <div class="form-group">
+                    <label class="form-label">City</label>
+                    <input class="form-input" value="Mijdrecht">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">ZIP</label>
+                    <input class="form-input" value="3641">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Country</label>
+                  <select class="form-select"><option>Pays-Bas</option></select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sig-section section-gap">
+            <div class="sig-section-header">⚖️ Info LUCCS</div>
+            <div class="sig-section-body">
+              <div class="grid-2" style="gap:16px">
+                <div class="form-group">
+                  <label class="form-label">Poids Déclaré (kg)</label>
+                  <input class="form-input" placeholder="—">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Poids Réel (kg)</label>
+                  <input class="form-input" placeholder="Enter weight…">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;margin-top:16px">
+            <button class="btn btn-primary" onclick="showTab(2)">Next: Documents →</button>
+          </div>
+        </div>
+
+        <!-- TAB 2: DOCUMENTS -->
+        <div class="tab-panel" id="panel2">
+          <div class="doc-upload-zone" onclick="document.getElementById('docFileInput').click()">
+            <div style="font-size:28px;margin-bottom:8px">📄</div>
+            <div style="font-size:13px;color:var(--text2)">Drop files or click to upload</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:4px">PDF, images accepted</div>
+            <input type="file" id="docFileInput" style="display:none" multiple accept=".pdf,image/*" onchange="handleDocUpload(this)">
+          </div>
+
+          <div id="docList">
+            <div class="doc-item">
+              <div class="doc-icon">📕</div>
+              <div>
+                <div class="doc-name">172-03822722.pdf</div>
+                <div class="doc-meta">AWB Document · 245 KB</div>
+              </div>
+              <button class="btn-icon" style="color:var(--red)">🗑</button>
+            </div>
+            <div class="doc-item">
+              <div class="doc-icon">📋</div>
+              <div>
+                <div class="doc-name">Constat 02336.pdf</div>
+                <div class="doc-meta">Constat DAD · 189 KB</div>
+              </div>
+              <button class="btn-icon" style="color:var(--red)">🗑</button>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;margin-top:16px">
+            <button class="btn btn-ghost" onclick="showTab(1)">← Signalétique</button>
+            <button class="btn btn-primary" onclick="showTab(3)">Next: Procédures →</button>
+          </div>
+        </div>
+
+        <!-- TAB 3: PROCÉDURES / MERCHANDISE -->
+        <div class="tab-panel" id="panel3">
+          <div class="card">
+            <div class="merch-toolbar">
+              <div class="merch-search">
+                <span class="merch-search-icon">🔍</span>
+                <input placeholder="Search brand, comment, CN code…" oninput="filterMerch(this.value)">
+              </div>
+              <button class="btn btn-primary" onclick="openAddMerch()">＋ Add Item</button>
+              <button class="btn btn-ghost btn-sm">Export CSV</button>
+            </div>
+
+            <div class="merch-table-wrap">
+              <table class="merch-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Brand</th>
+                    <th>Category</th>
+                    <th>CN Code</th>
+                    <th>Qty</th>
+                    <th>Perishable</th>
+                    <th>Battery</th>
+                    <th>Comment</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="merchBody">
+                </tbody>
+              </table>
+            </div>
+            <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:11px;color:var(--text3)">Total items: <span id="totalItems" style="color:var(--text);font-weight:600">684</span></div>
+              <button class="btn btn-ghost btn-sm">Show All Photos</button>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;margin-top:16px">
+            <button class="btn btn-ghost" onclick="showTab(2)">← Documents</button>
+            <button class="btn btn-primary" onclick="showTab(4)">Next: Photos →</button>
+          </div>
+        </div>
+
+        <!-- TAB 4: PHOTOS OVERVIEW -->
+        <div class="tab-panel" id="panel4">
+          <div class="alert alert-info">
+            ℹ️ Photos are attached per merchandise line in the Procédures tab. This view shows a consolidated overview.
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Photo Overview</div>
+              <div style="font-size:11px;color:var(--text2)" id="photoCount">Loading…</div>
+            </div>
+            <div id="photoOverviewBody" style="padding:16px">
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:16px">
+            <button class="btn btn-ghost" onclick="showTab(3)">← Procédures</button>
+            <button class="btn btn-primary" onclick="showTab(5)">Next: Résumé →</button>
+          </div>
+        </div>
+
+        <!-- TAB 5: RÉSUMÉ -->
+        <div class="tab-panel" id="panel5">
+          <div class="grid-2" style="gap:16px;margin-bottom:16px">
+            <div class="summary-block">
+              <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Identification</div>
+              <div class="summary-row"><span class="summary-key">Reference</span><span class="summary-val">LU26DRAFT0002</span></div>
+              <div class="summary-row"><span class="summary-key">Bureau Ref</span><span class="summary-val">CONSTAT DAD 2025_02336</span></div>
+              <div class="summary-row"><span class="summary-key">AWB</span><span class="summary-val">172-0382 2722</span></div>
+              <div class="summary-row"><span class="summary-key">Origin</span><span class="summary-val">Chine</span></div>
+              <div class="summary-row"><span class="summary-key">Declarant</span><span class="summary-val">LUXCARGO HANDLING</span></div>
+            </div>
+            <div class="summary-block">
+              <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Parties</div>
+              <div class="summary-row"><span class="summary-key">Exporter</span><span class="summary-val">Banzina Clothing Guangzhou CO LTD</span></div>
+              <div class="summary-row"><span class="summary-key">Importer</span><span class="summary-val">QLS Logistics</span></div>
+              <div class="summary-row"><span class="summary-key">Country</span><span class="summary-val">NL ← CN</span></div>
+            </div>
+          </div>
+          <div class="summary-block">
+            <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Merchandise Summary</div>
+            <div id="summaryMerchList"></div>
+          </div>
+          <div class="summary-block mt-16">
+            <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Totals</div>
+            <div class="summary-row"><span class="summary-key">Total Lines</span><span class="summary-val" id="sumLines">—</span></div>
+            <div class="summary-row"><span class="summary-key">Total Items</span><span class="summary-val" id="sumQty">684</span></div>
+            <div class="summary-row"><span class="summary-key">Documents</span><span class="summary-val">2</span></div>
+            <div class="summary-row"><span class="summary-key">Status</span><span class="summary-val"><span class="badge badge-draft">Draft</span></span></div>
+          </div>
+
+          <div class="submit-btn-wrap">
+            <button class="btn btn-primary submit-btn">🚀 Submit Dossier</button>
+          </div>
+          <div style="display:flex;justify-content:flex-start;margin-top:8px">
+            <button class="btn btn-ghost" onclick="showTab(4)">← Photos</button>
+          </div>
+        </div>
+
+      </div><!-- end dossier detail -->
+
+      <!-- ══════════ BRANDS VIEW ══════════ -->
+      <div class="view" id="view-brands">
+        <div class="flex items-center justify-between gap-12" style="margin-bottom:16px">
+          <div>
+            <div class="font-display" style="font-size:20px">Brands</div>
+            <div class="text-xs mt-12">Registered trademark registry</div>
+          </div>
+          <button class="btn btn-primary">＋ Request New Brand</button>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <input class="form-input" style="max-width:260px" placeholder="Search brands…" oninput="filterBrands(this.value)" id="brandSearchInput">
+            <div style="font-size:11px;color:var(--text3)" id="brandCountLabel">120 brands</div>
+          </div>
+          <div style="padding:8px 0;max-height:520px;overflow-y:auto;">
+            <div id="brandListFull" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1px;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ CONTACTS VIEW ══════════ -->
+      <div class="view" id="view-contacts">
+        <div class="flex items-center justify-between gap-12" style="margin-bottom:16px">
+          <div>
+            <div class="font-display" style="font-size:20px">Contacts</div>
+            <div class="text-xs mt-12">Declarants & handling agents</div>
+          </div>
+          <button class="btn btn-primary">＋ New Contact</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Company</th>
+                  <th>Address</th>
+                  <th>City</th>
+                  <th>Country</th>
+                  <th>Email</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>AGIMEX</td><td>AGIMEX S.à r.l.</td><td>Parc Logistique…</td><td>Dudelange</td><td>Luxembourg</td><td>aurelien.heynen…</td><td><span class="badge badge-pending">Declarant</span></td></tr>
+                <tr><td>DHL</td><td>DHL</td><td>11a, rue Edmon…</td><td>Contern</td><td>Luxembourg</td><td>olivier.navet@d…</td><td><span class="badge badge-pending">Declarant</span></td></tr>
+                <tr><td>FEDEX</td><td>FedEx Express</td><td>333, ZAE Wolse…</td><td>Dudelange</td><td>Luxembourg</td><td>LU-Import@fed…</td><td><span class="badge badge-pending">Declarant</span></td></tr>
+                <tr><td>LUXCARGO HANDLING</td><td>Luxcargo Handl…</td><td>Aéroport de Lux…</td><td>Luxembourg</td><td>Luxembourg</td><td>customer.servic…</td><td><span class="badge badge-pending">Declarant</span></td></tr>
+                <tr><td>POST LOGISTICS</td><td>POST LOGISTICS</td><td>9, rue de Trêves</td><td>Niederanven</td><td>Luxembourg</td><td>customs@post…</td><td><span class="badge badge-pending">Declarant</span></td></tr>
+                <tr><td>UNITED PARCEL SERVICE</td><td>UPS</td><td>Woluwelaan 156</td><td>Diegem</td><td>Belgique</td><td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c9abbba6a5bcb189bcb9bae7aaa6a4">[email&#160;protected]</a></td><td><span class="badge badge-pending">Declarant</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ DESTRUCTION VIEW ══════════ -->
+      <div class="view" id="view-destruction">
+        <div class="flex items-center justify-between gap-12" style="margin-bottom:16px">
+          <div>
+            <div class="font-display" style="font-size:20px">Destruction</div>
+            <div class="text-xs mt-12">Destruction batch management</div>
+          </div>
+          <button class="btn btn-primary">＋ New Batch</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Batch Name</th>
+                  <th>Total Items</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Scheduled</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="td-ref">Post 2026</td><td><span class="qty-pill">1,077</span></td><td><span class="badge badge-draft">Draft</span></td><td class="td-mono">02/02/2026</td><td>—</td></tr>
+                <tr><td class="td-ref">CARGO_1 2026</td><td><span class="qty-pill">14,623</span></td><td><span class="badge badge-draft">Draft</span></td><td class="td-mono">16/03/2026</td><td>—</td></tr>
+                <tr><td class="td-ref">Post 2024</td><td><span class="qty-pill">601</span></td><td><span class="badge badge-complete">Complete</span></td><td class="td-mono">26/09/2025</td><td class="td-mono">11/12/2024</td></tr>
+                <tr><td class="td-ref">Silkway 2025</td><td><span class="qty-pill">1,208</span></td><td><span class="badge badge-complete">Complete</span></td><td class="td-mono">26/09/2025</td><td class="td-mono">15/05/2025</td></tr>
+                <tr><td class="td-ref">Post Logistics BACKUP 1-2</td><td><span class="qty-pill">17,420</span></td><td><span class="badge badge-complete">Complete</span></td><td class="td-mono">01/10/2025</td><td class="td-mono">06/02/2024</td></tr>
+                <tr><td class="td-ref">Post Logistics BACKUP 2-2</td><td><span class="qty-pill">26,553</span></td><td><span class="badge badge-complete">Complete</span></td><td class="td-mono">01/10/2025</td><td class="td-mono">10/06/2024</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ SEARCH VIEW ══════════ -->
+      <div class="view" id="view-search">
+        <div class="flex items-center justify-between gap-12" style="margin-bottom:16px">
+          <div>
+            <div class="font-display" style="font-size:20px">Search Inventory</div>
+            <div class="text-xs mt-12">Search brand or item across all dossiers · Box &amp; Parcel location shown</div>
+          </div>
+          <button class="btn btn-ghost" onclick="printDesktopSearch()" id="desktop-srch-print" style="display:none">🖨 Print Results</button>
+        </div>
+        <div class="search-bar-wrap" style="flex-wrap:wrap;gap:8px">
+          <div style="display:flex;gap:8px;flex:1;min-width:0">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:5px">Brand</div>
+              <div class="search-input-wrap">
+                <input class="search-input" id="desktop-srch-q" placeholder="e.g. Nike, Apple" autocomplete="off" oninput="runDesktopSearch()">
+                <span class="search-clear" id="desktop-srch-clear" onclick="clearDesktopSearch()">✕</span>
+              </div>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:5px">Refine <span style="color:var(--text3);font-weight:400;letter-spacing:0;text-transform:none">(optional)</span></div>
+              <div class="search-input-wrap">
+                <input class="search-input" id="desktop-srch-r" placeholder="e.g. Shirt, Watch" autocomplete="off" oninput="runDesktopSearch()">
+                <span class="search-clear" id="desktop-srch-r-clear" onclick="clearDesktopRefine()">✕</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <div>
+              <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:5px">Dossier</div>
+              <select class="form-select" id="desktop-srch-session" onchange="runDesktopSearch()" style="width:200px;font-size:12px">
+                <option value="">All dossiers</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="runDesktopSearch()" style="height:36px">Search</button>
+          </div>
+        </div>
+        <div id="desktop-srch-results">
+          <div class="search-empty">
+            <div class="search-empty-ic">🔍</div>
+            <div>Enter a brand or description to search<br>across all inventory dossiers.</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end content -->
+  </main>
+</div>
+
+<!-- ══════════ ADD MERCHANDISE MODAL ══════════ -->
+<div class="modal-backdrop" id="addMerchModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Merchandise</div>
+      <button class="btn-icon" onclick="closeModal('addMerchModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Brand -->
+      <div class="form-group brand-search-wrap">
+        <label class="form-label required">Brand</label>
+        <input class="form-input" id="brandInput" placeholder="Type to search brand…" autocomplete="off" oninput="searchBrands(this.value)" onfocus="searchBrands(this.value)">
+        <div class="brand-dropdown" id="brandDropdown"></div>
+      </div>
+
+      <!-- Category + CN Code -->
+      <div class="form-group">
+        <label class="form-label required">Category / CN Code</label>
+        <div class="cn-grid" id="cnGrid"></div>
+      </div>
+
+      <!-- Quantity -->
+      <div class="grid-2" style="gap:12px">
+        <div class="form-group">
+          <label class="form-label required">Quantity</label>
+          <input class="form-input" type="number" id="qtyInput" min="1" value="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Comment</label>
+          <input class="form-input" id="commentInput" placeholder="e.g. shirt, bag, watch…">
+        </div>
+      </div>
+
+      <!-- Flags -->
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <div class="flag-row">
+          <input type="checkbox" class="toggle-check" id="perishableCheck">
+          <label for="perishableCheck" style="font-size:12px;cursor:pointer">Perishable</label>
+        </div>
+        <div class="flag-row">
+          <input type="checkbox" class="toggle-check" id="batteryCheck">
+          <label for="batteryCheck" style="font-size:12px;cursor:pointer">Contains Battery</label>
+        </div>
+      </div>
+
+      <!-- Photo Upload -->
+      <div class="form-group">
+        <label class="form-label">Photos</label>
+        <div class="photo-drop-zone" id="photoDropZone"
+          onclick="document.getElementById('photoFileInput').click()"
+          ondragover="handleDragOver(event)"
+          ondrop="handleDrop(event)"
+          ondragleave="handleDragLeave(event)">
+          <div class="photo-drop-icon">📸</div>
+          <div class="photo-drop-text">Tap to shoot or upload</div>
+          <div class="photo-drop-sub">JPEG, PNG · drag & drop supported</div>
+          <input type="file" id="photoFileInput" style="display:none" multiple accept="image/*" capture="environment" onchange="handlePhotoFiles(this.files)">
+        </div>
+        <div class="photo-grid" id="photoGrid"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addMerchModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addMerchandise()">＋ Add to Dossier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PHOTOS MODAL ══════════ -->
+<div class="modal-backdrop" id="photosModal">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <div class="modal-title" id="photosModalTitle">Photos</div>
+      <button class="btn-icon" onclick="closeModal('photosModal')">✕</button>
+    </div>
+    <div style="padding:16px">
+      <div class="photo-drop-zone" style="padding:16px;margin-bottom:12px" onclick="document.getElementById('photoFileInputModal').click()">
+        <div style="font-size:14px;margin-bottom:4px">📸 Add more photos</div>
+        <input type="file" id="photoFileInputModal" style="display:none" multiple accept="image/*" capture="environment">
+      </div>
+      <div class="photos-modal-grid" id="photosModalGrid">
+        <div class="photo-modal-thumb">🖼</div>
+        <div class="photo-modal-thumb">🖼</div>
+        <div class="photo-modal-thumb">🖼</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('photosModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────
+const BRANDS = [
+  '3M','ABERCROMBIE & FITCH','AC/DC','ACNE STUDIOS','ADIDAS','AFRM','AKIMBO CLUB',
+  'ALAIA','ALEXANDER MCQUEEN','ALEXANDER WANG','ALFA ROMEO','ALO','ALYX','AMAZON',
+  'AMD','AMI','AMIRI','APM','APPLE','ARCTERYX','ARIANA GRANDE','ARMANI','ASICS',
+  'ASTON MARTIN','ASUS','AUDEMARS PIGUET','BALENCIAGA','BALMAIN','BOSS','BULGARI',
+  'BURBERRY','CANADA GOOSE','CARTIER','CASTORE','CELINE','CHANEL','CLE DE PEAU',
+  'DIOR','DSQUARED2','DYSON','FENDI','FILA','GIVENCHY','GOLDEN GOOSE','GUCCI',
+  'HERMES','HUGO BOSS','KAPPA','LACOSTE','LANCOME','LOEWE','LONGCHAMP','LORO PIANA',
+  'LOUIS VUITTON','MONCLER','NEW BALANCE','NEW ERA','NIKE','NORTH FACE','OFF-WHITE',
+  'OMEGA','PRADA','RALPH LAUREN','ROLEX','SAINT LAURENT','SAMSUNG','SONY','STONE ISLAND',
+  'SUPREME','TOMMY HILFIGER','VALENTINO','VERSACE','ZARA'
+];
+
+const CN_CATEGORIES = [
+  { code: '65050090', label: '3a : clothing (ready to wear)', cat: '3a' },
+  { code: '61099090', label: '3a : clothing (ready to wear)', cat: '3a' },
+  { code: '62046911', label: '3a : clothing (ready to wear)', cat: '3a' },
+  { code: '61150000', label: '3b : clothing accessories', cat: '3b' },
+  { code: '61153011', label: '3b : clothing accessories', cat: '3b' },
+  { code: '64041100', label: '4b : other shoes', cat: '4b' },
+  { code: '64061100', label: '4a : sport shoes', cat: '4a' },
+  { code: '90041000', label: '5a : sunglasses', cat: '5a' },
+  { code: '42022100', label: '5b : bags incl. wallets, purses', cat: '5b' },
+  { code: '91012900', label: '5c : watches', cat: '5c' },
+  { code: '91011100', label: '5c : watches', cat: '5c' },
+  { code: '71131920', label: '5d : jewellery', cat: '5d' },
+  { code: '85044030', label: '6b : parts for mobile phones', cat: '6b' },
+  { code: '85076000', label: '6b : battery parts', cat: '6b' },
+  { code: '85444210', label: '6b : cables / technical accessories', cat: '6b' },
+  { code: '85183000', label: '7a : audio/video (Airpods, etc.)', cat: '7a' },
+  { code: '33030000', label: '2a : perfumes and cosmetics', cat: '2a' },
+  { code: '34025090', label: '2a : cosmetics / creams', cat: '2a' },
+  { code: '33041000', label: '2a : lipstick / make-up', cat: '2a' },
+];
+
+let merchandise = [
+  { brand:'ADIDAS', cat:'3a : clothing (n…', cn:'62046911', qty:41, perish:false, battery:false, comment:'pants', photos:4 },
+  { brand:'ADIDAS', cat:'4b : other shoes', cn:'64041100', qty:4, perish:false, battery:false, comment:'shoes', photos:6 },
+  { brand:'ADIDAS', cat:'3a : clothing (n…', cn:'61099090', qty:206, perish:false, battery:false, comment:'shirt', photos:4 },
+  { brand:'ADIDAS', cat:'3b : clothing ac…', cn:'61153011', qty:16, perish:false, battery:false, comment:'socks', photos:4 },
+  { brand:'APPLE', cat:'5c : watches', cn:'91012900', qty:2, perish:false, battery:true, comment:'watch', photos:0 },
+  { brand:'APPLE', cat:'6b : parts and…', cn:'85076000', qty:1, perish:false, battery:true, comment:'Battery Pack', photos:10 },
+  { brand:'APPLE', cat:'6b : parts and…', cn:'85444210', qty:6, perish:false, battery:false, comment:'Kabel', photos:6 },
+  { brand:'APPLE', cat:'7a : audioVide…', cn:'85183000', qty:5, perish:false, battery:true, comment:'Airpods', photos:16 },
+  { brand:'ARMANI', cat:'5c : watches', cn:'91012900', qty:3, perish:false, battery:false, comment:'watch', photos:9 },
+  { brand:'ARMANI', cat:'2a : perfumes', cn:'33030000', qty:1, perish:false, battery:false, comment:'parfum', photos:8 },
+  { brand:'ARMANI', cat:'3a : clothing (n…', cn:'61099090', qty:3, perish:false, battery:false, comment:'shirt', photos:0 },
+  { brand:'ASICS', cat:'4b : other shoes', cn:'64041100', qty:3, perish:false, battery:false, comment:'shoes', photos:11 },
+  { brand:'ASICS', cat:'3a : clothing (n…', cn:'61099090', qty:2, perish:false, battery:false, comment:'Shirt', photos:7 },
+  { brand:'AUDEMARS PIGUET', cat:'5c : watches', cn:'91011100', qty:1, perish:false, battery:true, comment:'', photos:14 },
+  { brand:'BALENCIAGA', cat:'4b : other shoes', cn:'64041100', qty:1, perish:false, battery:false, comment:'shoes', photos:14 },
+  { brand:'BOSS', cat:'2a : perfumes', cn:'33030000', qty:1, perish:false, battery:false, comment:'parfum', photos:5 },
+  { brand:'BULGARI', cat:'2a : perfumes', cn:'33030000', qty:2, perish:false, battery:false, comment:'parfum', photos:4 },
+  { brand:'CANADA GOOSE', cat:'3a : clothing (n…', cn:'65050090', qty:3, perish:false, battery:false, comment:'cap', photos:6 },
+  { brand:'CARTIER', cat:'5c : watches', cn:'91012900', qty:2, perish:false, battery:false, comment:'watch', photos:13 },
+  { brand:'CASTORE', cat:'3a : clothing (n…', cn:'61099090', qty:3, perish:false, battery:false, comment:'shirt', photos:6 },
+  { brand:'CELINE', cat:'5a : sunglasses', cn:'90041000', qty:1, perish:false, battery:false, comment:'', photos:5 },
+  { brand:'CHANEL', cat:'5b : bags inclu…', cn:'42022100', qty:1, perish:false, battery:false, comment:'bag', photos:7 },
+  { brand:'CHANEL', cat:'4b : other shoes', cn:'64041100', qty:1, perish:false, battery:false, comment:'shoes', photos:6 },
+  { brand:'CHANEL', cat:'3b : clothing ac…', cn:'61150000', qty:2, perish:false, battery:false, comment:'socks', photos:3 },
+  { brand:'CLE DE PEAU', cat:'2a : perfumes', cn:'34025090', qty:4, perish:false, battery:false, comment:'creme', photos:5 },
+];
+
+let selectedBrand = '';
+let selectedCN = null;
+let uploadedPhotos = [];
+let activeTab = 1;
+
+// ─── NAVIGATION ─────────────────────────────────────
+function navigate(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const titles = {
+    tasks: 'Task Queue',
+    dossiers: 'Dossiers',
+    'dossier-detail': 'LU26DRAFT0002',
+    brands: 'Brand Registry',
+    contacts: 'Contacts',
+    destruction: 'Destruction',
+    search: 'Search Inventory'
+  };
+
+  const el = document.getElementById('view-' + view);
+  if (el) el.classList.add('active');
+
+  const navEl = document.getElementById('nav-' + view.split('-')[0]);
+  if (navEl) navEl.classList.add('active');
+
+  document.getElementById('topbarTitle').textContent = titles[view] || view;
+  closeSidebar();
+
+  if (view === 'brands') renderBrandList();
+  if (view === 'dossier-detail') { renderMerch(); renderPhotoOverview(); renderSummary(); }
+  if (view === 'search') initDesktopSearch();
+}
+
+function openDossier() {
+  navigate('dossier-detail');
+  document.getElementById('nav-dossiers').classList.add('active');
+  showTab(1);
+}
+
+// ─── TABS ────────────────────────────────────────────
+function showTab(n) {
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('tab' + i).classList.toggle('active', i === n);
+    document.getElementById('panel' + i).classList.toggle('active', i === n);
+  }
+  activeTab = n;
+  if (n === 4) renderPhotoOverview();
+  if (n === 5) renderSummary();
+}
+
+// ─── MERCHANDISE ─────────────────────────────────────
+function renderMerch(filter = '') {
+  const body = document.getElementById('merchBody');
+  const filtered = merchandise.filter(m =>
+    !filter ||
+    m.brand.toLowerCase().includes(filter.toLowerCase()) ||
+    m.comment.toLowerCase().includes(filter.toLowerCase()) ||
+    m.cn.includes(filter)
+  );
+  body.innerHTML = filtered.map((m, i) => `
+    <tr>
+      <td><button class="btn-icon btn-sm" style="color:var(--red);border-color:var(--red-dim)" onclick="deleteMerch(${i})">🗑</button></td>
+      <td><div class="merch-brand">${m.brand}</div></td>
+      <td style="font-size:11px;color:var(--text2);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.cat}</td>
+      <td><div class="merch-cn">${m.cn}</div></td>
+      <td><div class="merch-qty">${m.qty}</div></td>
+      <td><input type="checkbox" class="toggle-check" ${m.perish ? 'checked' : ''} onchange="merchandise[${i}].perish=this.checked"></td>
+      <td><input type="checkbox" class="toggle-check" ${m.battery ? 'checked' : ''} onchange="merchandise[${i}].battery=this.checked"></td>
+      <td style="font-size:11px;color:var(--text2)">${m.comment}</td>
+      <td>
+        <div class="photo-count ${m.photos > 0 ? 'has-photos' : ''}" onclick="openPhotosModal('${m.brand} — ${m.comment}', ${i})">
+          📷 ${m.photos}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  const total = merchandise.reduce((s, m) => s + m.qty, 0);
+  document.getElementById('totalItems').textContent = total.toLocaleString();
+}
+
+function filterMerch(v) { renderMerch(v); }
+
+function deleteMerch(i) {
+  merchandise.splice(i, 1);
+  renderMerch();
+}
+
+// ─── ADD MERCHANDISE MODAL ───────────────────────────
+function openAddMerch() {
+  selectedBrand = '';
+  selectedCN = null;
+  uploadedPhotos = [];
+  document.getElementById('brandInput').value = '';
+  document.getElementById('qtyInput').value = '1';
+  document.getElementById('commentInput').value = '';
+  document.getElementById('perishableCheck').checked = false;
+  document.getElementById('batteryCheck').checked = false;
+  document.getElementById('photoGrid').innerHTML = '';
+  renderCNGrid();
+  document.getElementById('addMerchModal').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function searchBrands(val) {
+  const dd = document.getElementById('brandDropdown');
+  const matches = BRANDS.filter(b => b.toLowerCase().includes(val.toLowerCase())).slice(0, 12);
+  if (!matches.length || !val) { dd.classList.remove('open'); return; }
+  dd.innerHTML = matches.map(b => `
+    <div class="brand-option ${b === selectedBrand ? 'selected' : ''}" onclick="selectBrand('${b}')">
+      <span>${b}</span>
+    </div>
+  `).join('');
+  dd.classList.add('open');
+}
+
+function selectBrand(b) {
+  selectedBrand = b;
+  document.getElementById('brandInput').value = b;
+  document.getElementById('brandDropdown').classList.remove('open');
+}
+
+function renderCNGrid() {
+  const grid = document.getElementById('cnGrid');
+  grid.innerHTML = CN_CATEGORIES.map((c, i) => `
+    <div class="cn-option ${selectedCN === i ? 'selected' : ''}" onclick="selectCN(${i})">
+      <div class="cn-code">${c.code}</div>
+      <div class="cn-label">${c.label}</div>
+    </div>
+  `).join('');
+}
+
+function selectCN(i) {
+  selectedCN = i;
+  renderCNGrid();
+}
+
+function addMerchandise() {
+  if (!selectedBrand) { alert('Please select a brand.'); return; }
+  if (selectedCN === null) { alert('Please select a CN category.'); return; }
+  const cn = CN_CATEGORIES[selectedCN];
+  const qty = parseInt(document.getElementById('qtyInput').value) || 1;
+  merchandise.unshift({
+    brand: selectedBrand,
+    cat: cn.label.substring(0, 20) + '…',
+    cn: cn.code,
+    qty,
+    perish: document.getElementById('perishableCheck').checked,
+    battery: document.getElementById('batteryCheck').checked,
+    comment: document.getElementById('commentInput').value,
+    photos: uploadedPhotos.length
+  });
+  renderMerch();
+  closeModal('addMerchModal');
+}
+
+// ─── PHOTOS ──────────────────────────────────────────
+function handlePhotoFiles(files) {
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      uploadedPhotos.push(e.target.result);
+      renderPhotoGrid();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('photoGrid');
+  grid.innerHTML = uploadedPhotos.map((src, i) => `
+    <div class="photo-thumb">
+      <img src="${src}" alt="">
+      <div class="photo-thumb-del" onclick="removePhoto(${i})">✕</div>
+    </div>
+  `).join('');
+}
+
+function removePhoto(i) {
+  uploadedPhotos.splice(i, 1);
+  renderPhotoGrid();
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('photoDropZone').classList.add('dragging');
+}
+function handleDragLeave() {
+  document.getElementById('photoDropZone').classList.remove('dragging');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('photoDropZone').classList.remove('dragging');
+  handlePhotoFiles(e.dataTransfer.files);
+}
+
+function handleDocUpload(input) {
+  const list = document.getElementById('docList');
+  Array.from(input.files).forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'doc-item';
+    div.innerHTML = `
+      <div class="doc-icon">📄</div>
+      <div>
+        <div class="doc-name">${f.name}</div>
+        <div class="doc-meta">${(f.size/1024).toFixed(0)} KB</div>
+      </div>
+      <button class="btn-icon" style="color:var(--red)">🗑</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function openPhotosModal(title, idx) {
+  document.getElementById('photosModalTitle').textContent = title;
+  const m = merchandise[idx];
+  const grid = document.getElementById('photosModalGrid');
+  if (m.photos === 0) {
+    grid.innerHTML = `<div style="padding:24px;color:var(--text3);font-size:12px;grid-column:1/-1">No photos yet. Use the button above to add.</div>`;
+  } else {
+    grid.innerHTML = Array(m.photos).fill(0).map(() => `<div class="photo-modal-thumb">🖼</div>`).join('');
+  }
+  document.getElementById('photosModal').classList.add('open');
+}
+
+function renderPhotoOverview() {
+  const body = document.getElementById('photoOverviewBody');
+  const withPhotos = merchandise.filter(m => m.photos > 0);
+  const total = merchandise.reduce((s, m) => s + m.photos, 0);
+  document.getElementById('photoCount').textContent = `${total} photos across ${withPhotos.length} lines`;
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">
+      ${withPhotos.slice(0,12).map(m => `
+        <div class="doc-item" style="flex-direction:column;align-items:flex-start;gap:6px;cursor:pointer">
+          <div style="width:100%;aspect-ratio:16/9;background:var(--surface3);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:24px">🖼</div>
+          <div>
+            <div class="merch-brand" style="font-size:11px">${m.brand}</div>
+            <div style="font-size:10px;color:var(--text3)">${m.comment} · 📷 ${m.photos}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderSummary() {
+  const byBrand = {};
+  merchandise.forEach(m => {
+    if (!byBrand[m.brand]) byBrand[m.brand] = 0;
+    byBrand[m.brand] += m.qty;
+  });
+  const lines = Object.entries(byBrand).sort((a,b) => b[1]-a[1]);
+  document.getElementById('summaryMerchList').innerHTML = lines.slice(0, 15).map(([b, q]) => `
+    <div class="summary-row">
+      <span class="summary-key" style="font-family:var(--font-display);font-size:11px;font-weight:700;color:var(--amber)">${b}</span>
+      <span class="summary-val">${q} items</span>
+    </div>
+  `).join('') + (lines.length > 15 ? `<div style="font-size:10px;color:var(--text3);padding:6px 0">+${lines.length - 15} more brands…</div>` : '');
+
+  document.getElementById('sumLines').textContent = merchandise.length;
+  document.getElementById('sumQty').textContent = merchandise.reduce((s,m) => s + m.qty, 0).toLocaleString();
+}
+
+// ─── BRANDS VIEW ─────────────────────────────────────
+function renderBrandList(filter = '') {
+  const filtered = BRANDS.filter(b => !filter || b.toLowerCase().includes(filter.toLowerCase()));
+  document.getElementById('brandCountLabel').textContent = `${filtered.length} brands`;
+  document.getElementById('brandListFull').innerHTML = filtered.map(b => `
+    <div style="padding:9px 16px;font-size:12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 150ms;font-family:var(--font-mono)"
+      onmouseover="this.style.background='var(--surface2)'"
+      onmouseout="this.style.background=''"
+    >
+      ${b}
+    </div>
+  `).join('');
+}
+
+function filterBrands(v) { renderBrandList(v); }
+
+// ─── SIDEBAR MOBILE ──────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ─── CLICK OUTSIDE BRAND DROPDOWN ───────────────────
+document.addEventListener('click', e => {
+  if (!e.target.closest('.brand-search-wrap')) {
+    document.getElementById('brandDropdown').classList.remove('open');
+  }
+});
+
+// ─── THEME TOGGLE ────────────────────────────────────
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  document.getElementById('themeLabel').textContent = isLight ? '☀ Light' : '☾ Dark';
+  try { localStorage.setItem('leprit-theme', isLight ? 'light' : 'dark'); } catch(e){}
+}
+
+// Restore saved theme on load
+(function() {
+  try {
+    const saved = localStorage.getItem('leprit-theme');
+    if (saved === 'light') {
+      document.documentElement.classList.add('light');
+      window.addEventListener('DOMContentLoaded', () => {
+        const el = document.getElementById('themeLabel');
+        if (el) el.textContent = '☀ Light';
+      });
+    }
+  } catch(e){}
+})();
+
+// ─── SEARCH ──────────────────────────────────────────
+// Desktop uses the same merchandise array + demo dossier data
+const DEMO_SESSIONS = [
+  {
+    id:'demo-001', dad:'2026_02336', awb:'172-0382 2722', fiche:'1', agent:'BG / DO / RB',
+    packages:[
+      {num:1,parcels:[
+        {num:1,lines:[{brand:'NIKE',description:'Shirt',qty:2,photos:1,sample:false,battery:false}]},
+        {num:2,lines:[{brand:'ADIDAS',description:'Shirt',qty:1,photos:1,sample:false,battery:false}]},
+        {num:4,lines:[{brand:'NIKE',description:'Shirt',qty:2,photos:0,sample:false,battery:false}]},
+        {num:5,lines:[
+          {brand:'PUMA',description:'Shirt',qty:1,photos:1,sample:false,battery:false},
+          {brand:'ADIDAS',description:'Shirt',qty:1,photos:0,sample:false,battery:false},
+        ]}
+      ]},
+      {num:8,parcels:[{num:1,lines:[
+        {brand:'ADIDAS',description:'Shirt',qty:16,photos:0,sample:false,battery:false},
+        {brand:'NIKE',description:'Shirt',qty:4,photos:0,sample:false,battery:false},
+        {brand:'APPLE',description:'Earphones',qty:3,photos:1,sample:true,battery:true},
+      ]}]},
+      {num:9,parcels:[{num:1,lines:[{brand:'HERMES',description:'Bag',qty:2,photos:1,sample:false,battery:false}]}]},
+      {num:10,parcels:[{num:1,lines:[{brand:'DYSON',description:'Hairdryer',qty:1,photos:1,sample:false,battery:false}]}]},
+      {num:14,parcels:[{num:1,lines:[{brand:'GUCCI',description:'Jewelry',qty:2,photos:1,sample:false,battery:false}]}]},
+      {num:15,parcels:[{num:1,lines:[{brand:'APPLE',description:'Phone Case',qty:6,photos:0,sample:false,battery:false}]}]},
+      {num:16,parcels:[{num:1,lines:[{brand:'SWATCH',description:'Watch',qty:8,photos:1,sample:false,battery:true}]}]},
+    ]
+  }
+];
+
+let desktopSearchResults = [];
+
+function initDesktopSearch(){
+  const sel = document.getElementById('desktop-srch-session');
+  sel.innerHTML = '<option value="">All dossiers</option>' +
+    DEMO_SESSIONS.map(s=>`<option value="${s.id}">DAD ${s.dad} · Fiche #${s.fiche}</option>`).join('');
+  document.getElementById('desktop-srch-q').value = '';
+  document.getElementById('desktop-srch-r').value = '';
+  document.getElementById('desktop-srch-clear').style.display = 'none';
+  document.getElementById('desktop-srch-r-clear').style.display = 'none';
+  document.getElementById('desktop-srch-print').style.display = 'none';
+  document.getElementById('desktop-srch-results').innerHTML =
+    `<div class="search-empty"><div class="search-empty-ic">🔍</div><div>Enter a brand and optionally refine by item type<br>to search across all inventory dossiers.</div></div>`;
+  desktopSearchResults = [];
+}
+
+function clearDesktopSearch(){
+  document.getElementById('desktop-srch-q').value='';
+  document.getElementById('desktop-srch-r').value='';
+  document.getElementById('desktop-srch-clear').style.display='none';
+  document.getElementById('desktop-srch-r-clear').style.display='none';
+  document.getElementById('desktop-srch-print').style.display='none';
+  document.getElementById('desktop-srch-results').innerHTML =
+    `<div class="search-empty"><div class="search-empty-ic">🔍</div><div>Enter a brand and optionally refine by item type<br>to search across all inventory dossiers.</div></div>`;
+  desktopSearchResults=[];
+  document.getElementById('desktop-srch-q').focus();
+}
+
+function clearDesktopRefine(){
+  document.getElementById('desktop-srch-r').value='';
+  document.getElementById('desktop-srch-r-clear').style.display='none';
+  runDesktopSearch();
+}
+
+function hlDesktop(text, q){
+  if(!q) return text;
+  const esc = q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return text.replace(new RegExp('('+esc+')','gi'),'<mark>$1</mark>');
+}
+
+function runDesktopSearch(){
+  const q = document.getElementById('desktop-srch-q').value.trim();
+  const r = document.getElementById('desktop-srch-r').value.trim();
+  const sessionId = document.getElementById('desktop-srch-session').value;
+  const printBtn = document.getElementById('desktop-srch-print');
+  const el = document.getElementById('desktop-srch-results');
+
+  document.getElementById('desktop-srch-clear').style.display = q ? 'block' : 'none';
+  document.getElementById('desktop-srch-r-clear').style.display = r ? 'block' : 'none';
+
+  if(q.length < 2 && r.length < 2){
+    printBtn.style.display='none';
+    el.innerHTML=`<div class="search-empty"><div class="search-empty-ic">🔍</div><div>Enter at least 2 characters to search.</div></div>`;
+    desktopSearchResults=[];
+    return;
+  }
+
+  const ql = q.toLowerCase();
+  const rl = r.toLowerCase();
+  const srcSessions = sessionId ? DEMO_SESSIONS.filter(s=>s.id===sessionId) : DEMO_SESSIONS;
+  const hits = [];
+  srcSessions.forEach(s=>{
+    s.packages.forEach(pkg=>{
+      pkg.parcels.forEach(p=>{
+        p.lines.forEach(l=>{
+          const brandMatch = !ql || l.brand.toLowerCase().includes(ql);
+          const refineMatch = !rl || l.description.toLowerCase().includes(rl) || l.brand.toLowerCase().includes(rl);
+          if(brandMatch && refineMatch) hits.push({...l, pkg:pkg.num, parcel:p.num, session:s});
+        });
+      });
+    });
+  });
+
+  desktopSearchResults = hits;
+  const totalQty = hits.reduce((a,h)=>a+h.qty,0);
+  const terms = [q, r].filter(Boolean).join(' + ');
+
+  if(!hits.length){
+    printBtn.style.display='none';
+    el.innerHTML=`<div class="search-empty"><div class="search-empty-ic">📭</div><div>No results for "<strong>${terms}</strong>".<br>Try a different term.</div></div>`;
+    return;
+  }
+
+  printBtn.style.display='block';
+
+  el.innerHTML=
+    `<div class="search-summary">
+      <div>
+        <div class="search-summary-label">${hits.length} line${hits.length!==1?'s':''} found — ${totalQty} items total</div>
+        <div class="text-xs mt-12">Query: "${terms}"${sessionId?' · filtered by dossier':''}</div>
+      </div>
+    </div>` +
+    hits.map(h=>`
+      <div class="search-hit">
+        <div class="search-loc">
+          <div class="search-box">B${h.pkg}</div>
+          <div class="search-par">P${h.parcel}</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div class="search-brand">${hlDesktop(h.brand, q||r)}</div>
+          <div class="search-desc">${hlDesktop(h.description, r||q)}</div>
+          <div class="search-flags">
+            <span class="badge badge-pending" style="font-size:10px">×${h.qty}</span>
+            ${h.photos>0?`<span class="badge badge-complete" style="font-size:10px">📷 ${h.photos} photos</span>`:`<span class="badge badge-pending" style="font-size:10px">no photo</span>`}
+            ${h.sample?`<span class="badge badge-draft" style="font-size:10px">sample</span>`:''}
+            ${h.battery?`<span class="badge badge-progress" style="font-size:10px">battery</span>`:''}
+          </div>
+          <div class="search-session-ref">DAD ${h.session.dad} · Fiche #${h.session.fiche} · ${h.session.agent}</div>
+        </div>
+      </div>`).join('');
+}
+
+function printDesktopSearch(){
+  if(!desktopSearchResults.length) return;
+  const q = document.getElementById('desktop-srch-q').value.trim();
+  const r = document.getElementById('desktop-srch-r').value.trim();
+  const terms = [q, r].filter(Boolean).join(' + ');
+  const hits = desktopSearchResults;
+  const totalQty = hits.reduce((a,h)=>a+h.qty,0);
+
+  // Build print-friendly page
+  const printWin = window.open('','_blank');
+  const rows = hits.map(h=>`
+    <tr>
+      <td style="font-weight:700;text-align:center">${h.pkg}</td>
+      <td style="text-align:center">${h.parcel}</td>
+      <td style="font-weight:700">${h.brand}</td>
+      <td>${h.description}</td>
+      <td style="text-align:center">${h.qty}</td>
+      <td style="text-align:center">${h.photos>0?'✓':''}</td>
+      <td style="text-align:center">${h.sample?'✓':''}</td>
+      <td style="text-align:center">${h.battery?'✓':''}</td>
+      <td style="font-size:7px">${h.session.dad} F${h.session.fiche}</td>
+    </tr>`).join('');
+
+  printWin.document.write(`<!DOCTYPE html><html><head><title>Search Results — ${q}</title>
+  <style>
+    @page{size:A4 portrait;margin:10mm 8mm;}
+    body{font-family:Arial,sans-serif;font-size:9px;color:#000;}
+    .hdr{display:flex;align-items:stretch;border:1.5px solid #000;margin-bottom:8px;}
+    .hdr-main{padding:6px 10px;flex:1;}
+    .hdr-title{font-size:11px;font-weight:900;letter-spacing:.5px;}
+    .hdr-fields{display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;}
+    .hdr-f{display:flex;align-items:center;gap:5px;}
+    .hdr-lbl{font-weight:700;font-size:8px;}
+    .hdr-box{border:1px solid #000;padding:2px 8px;font-weight:900;font-size:9px;font-family:monospace;}
+    .hdr-pg{border-left:1.5px solid #000;padding:5px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:70px;}
+    table{width:100%;border-collapse:collapse;margin-top:4px;}
+    th{border:1px solid #000;padding:3px 4px;text-align:center;font-weight:800;font-size:7px;background:#f0f0f0;}
+    td{border:1px solid #000;padding:2px 4px;}
+    .footer{margin-top:5px;font-size:7px;color:#666;display:flex;justify-content:space-between;}
+  </style></head><body>
+  <div class="hdr">
+    <div class="hdr-main">
+      <div class="hdr-title">SEARCH RESULTS — LEPRIT INVENTORY</div>
+      <div class="hdr-fields">
+        <div class="hdr-f"><span class="hdr-lbl">QUERY:</span><span class="hdr-box">${q.toUpperCase()}</span></div>
+        <div class="hdr-f"><span class="hdr-lbl">RESULTS:</span><span class="hdr-box">${hits.length} lines · ${totalQty} items</span></div>
+      </div>
+    </div>
+    <div class="hdr-pg"><div style="font-size:7px;font-weight:700">DATE</div><div style="font-size:10px;font-weight:900">${new Date().toLocaleDateString('en-GB')}</div></div>
+  </div>
+  <table>
+    <thead><tr>
+      <th style="width:24px">BOX</th><th style="width:24px">PARCEL</th>
+      <th style="width:22%">BRAND</th><th style="width:22%">DESCRIPTION</th>
+      <th style="width:28px">QTY</th><th style="width:36px">PHOTO</th>
+      <th style="width:36px">SAMPLE</th><th style="width:32px">BAT.</th>
+      <th>SESSION</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="footer">
+    <span>LEPRIT Desktop · Search: "${q}" · ${new Date().toLocaleDateString('en-GB')}</span>
+    <span>${hits.length} lines · ${totalQty} items</span>
+  </div>
+  <script>window.onload=function(){window.print();window.close();}<\/script>
+  </body></html>`);
+  printWin.document.close();
+}
+
+// ─── INIT ─────────────────────────────────────────────
+renderCNGrid();
+renderMerch();
+</script>
+</body>
+</html>

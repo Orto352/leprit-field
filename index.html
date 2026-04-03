@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEPRIT — Customs Inventory Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f11;
+    --surface: #161719;
+    --surface2: #1e2023;
+    --surface3: #26292d;
+    --border: #2e3135;
+    --border2: #3a3f45;
+    --amber: #f59e0b;
+    --amber-dim: #92600a;
+    --amber-glow: rgba(245,158,11,0.12);
+    --amber-glow2: rgba(245,158,11,0.06);
+    --red: #ef4444;
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --text: #e8eaed;
+    --text2: #9ca3af;
+    --text3: #6b7280;
+    --font-display: 'Oswald', sans-serif;
+    --font-mono: 'Rajdhani', sans-serif;
+    --radius: 6px;
+    --radius-lg: 12px;
+    --transition: 150ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-mono);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND GRID ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(245,158,11,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── LAYOUT ── */
+  .page {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px 60px;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 48px;
+    background: rgba(14,15,17,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    z-index: 100;
+  }
+
+  .top-logo {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--amber);
+    letter-spacing: -0.3px;
+  }
+
+  .top-badge {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 99px;
+    padding: 3px 10px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    margin-bottom: 56px;
+    animation: fadeUp 600ms cubic-bezier(0.4,0,0.2,1) both;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--amber);
+    background: var(--amber-glow);
+    border: 1px solid var(--amber-dim);
+    border-radius: 99px;
+    padding: 4px 14px;
+    margin-bottom: 28px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--amber);
+    animation: pulse 2s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(52px, 10vw, 96px);
+    font-weight: 800;
+    letter-spacing: -3px;
+    color: var(--text);
+    line-height: 0.9;
+    margin-bottom: 10px;
+  }
+
+  .hero-title span {
+    color: var(--amber);
+  }
+
+  .hero-sub {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 16px;
+  }
+
+  .hero-desc {
+    font-size: 13px;
+    color: var(--text2);
+    max-width: 380px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 860px;
+    margin-bottom: 32px;
+    animation: fadeUp 600ms 100ms cubic-bezier(0.4,0,0.2,1) both;
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    white-space: nowrap;
+  }
+
+  /* ── CARDS ── */
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 860px;
+    animation: fadeUp 600ms 200ms cubic-bezier(0.4,0,0.2,1) both;
+  }
+
+  @media (max-width: 600px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 250ms ease, transform 250ms ease, box-shadow 250ms ease;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .card:hover {
+    border-color: var(--amber);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(245,158,11,0.12), 0 0 0 1px var(--amber);
+  }
+
+  .card:hover .card-arrow {
+    transform: translateX(4px);
+    color: var(--amber);
+  }
+
+  .card:hover .card-preview {
+    background: var(--surface2);
+  }
+
+  /* Card accent line */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--amber);
+    opacity: 0;
+    transition: opacity 250ms ease;
+  }
+  .card:hover::before { opacity: 1; }
+
+  /* ── CARD PREVIEW ── */
+  .card-preview {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 24px;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+    overflow: hidden;
+    transition: background 250ms ease;
+  }
+
+  /* Subtle scanline on preview */
+  .card-preview::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,0.08) 3px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+  }
+
+  /* Edition icon */
+  .edition-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 0 20px rgba(245,158,11,0.3));
+  }
+
+  /* Mini UI mockup */
+  .mockup {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 8px;
+    color: var(--text3);
+    line-height: 1.8;
+    font-family: var(--font-mono);
+    opacity: 0.7;
+    transition: opacity 250ms ease;
+    max-width: 120px;
+  }
+  .card:hover .mockup { opacity: 1; }
+
+  .mockup-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 3px;
+  }
+  .mockup-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .mockup-bar {
+    height: 5px;
+    border-radius: 2px;
+    background: var(--border2);
+  }
+  .mockup-bar.am { background: var(--amber); opacity: 0.6; }
+
+  .preview-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 2px 7px;
+    position: relative;
+    z-index: 1;
+    width: fit-content;
+  }
+
+  /* ── CARD BODY ── */
+  .card-body {
+    padding: 20px 22px 22px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-edition {
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.1;
+  }
+
+  .card-desc {
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.6;
+    flex: 1;
+    margin-bottom: 16px;
+  }
+
+  .card-features {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+
+  .card-feature {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 10px;
+    color: var(--text3);
+  }
+
+  .card-feature::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--amber);
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  .card-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .card-cta-label {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--amber);
+  }
+
+  .card-arrow {
+    font-size: 16px;
+    color: var(--text3);
+    transition: transform 250ms ease, color 250ms ease;
+  }
+
+  /* ── FOOTER INFO ── */
+  .footer-note {
+    margin-top: 48px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--text3);
+    animation: fadeUp 600ms 400ms cubic-bezier(0.4,0,0.2,1) both;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .footer-dot {
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--border2);
+  }
+
+  /* ── VERSION BADGE ── */
+  .version-tag {
+    position: absolute;
+    bottom: 12px; right: 12px;
+    font-size: 8px;
+    color: var(--text3);
+    opacity: 0.5;
+    font-family: var(--font-mono);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ── SCAN LINES AMBIENT ── */
+  .ambient {
+    position: fixed;
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245,158,11,0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: ambientPulse 6s ease infinite;
+  }
+
+  @keyframes ambientPulse {
+    0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+    50% { opacity: 1; transform: translateX(-50%) scale(1.15); }
+  }
+
+  /* ── PLATFORM STAT ROW ── */
+  .stats-row {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    margin-bottom: 48px;
+    animation: fadeUp 600ms 50ms cubic-bezier(0.4,0,0.2,1) both;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .stat-key {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .stat-sep {
+    width: 1px;
+    background: var(--border);
+    align-self: stretch;
+  }
+
+  /* ── PASSWORD GATE ── */
+  .gate {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    transition: opacity 400ms ease;
+  }
+  .gate.hidden { opacity: 0; pointer-events: none; }
+  .gate-box {
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .gate-logo {
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--amber);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .gate-sub {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 40px;
+  }
+  .gate-label {
+    width: 100%;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+  .gate-input-wrap {
+    width: 100%;
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .gate-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 11px 44px 11px 14px;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    letter-spacing: 2px;
+    transition: border-color 200ms ease;
+  }
+  .gate-input:focus { border-color: var(--amber); }
+  .gate-input.error { border-color: var(--red); animation: shake 300ms ease; }
+  .gate-eye {
+    position: absolute;
+    right: 12px; top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--text3);
+    font-size: 14px;
+    user-select: none;
+    transition: color 150ms ease;
+  }
+  .gate-eye:hover { color: var(--text2); }
+  .gate-btn {
+    width: 100%;
+    padding: 11px;
+    background: var(--amber);
+    color: var(--bg);
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 150ms ease, opacity 150ms ease;
+  }
+  .gate-btn:hover { background: #fbbf24; }
+  .gate-btn:disabled { opacity: 0.5; cursor: default; }
+  .gate-error {
+    margin-top: 10px;
+    font-size: 10px;
+    color: var(--red);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    height: 14px;
+    text-align: center;
+    width: 100%;
+  }
+  .gate-rule { width: 100%; height: 1px; background: var(--border); margin: 32px 0 20px; }
+  .gate-footer { font-size: 9px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; text-align: center; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="gate-logo">LEPRIT</div>
+    <div class="gate-sub">Customs Inventory Platform</div>
+    <div class="gate-label">Access Code</div>
+    <div class="gate-input-wrap">
+      <input class="gate-input" id="gateInput" type="password" placeholder="••••••••••••••" autocomplete="off" spellcheck="false" />
+      <span class="gate-eye" id="gateEye" onclick="toggleGateEye()">👁</span>
+    </div>
+    <button class="gate-btn" id="gateBtn" onclick="checkPassword()">Authenticate</button>
+    <div class="gate-error" id="gateError"></div>
+    <div class="gate-rule"></div>
+    <div class="gate-footer">Restricted Access — Authorised Personnel Only</div>
+  </div>
+</div>
+
+<div class="ambient"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="top-logo">LEPRIT</div>
+  <div class="top-badge">Customs Inventory Platform</div>
+</div>
+
+<!-- MAIN -->
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Platform Select</div>
+    <div class="hero-title">LEP<span>RIT</span></div>
+    <div class="hero-sub">Customs Inventory Platform</div>
+    <div class="hero-desc">Choose your edition. Both platforms share the same inventory workflow — built for speed, precision, and field readiness.</div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-val">2</div>
+      <div class="stat-key">Editions</div>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat">
+      <div class="stat-val">DAD</div>
+      <div class="stat-key">Protocol</div>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat">
+      <div class="stat-val">AWB</div>
+      <div class="stat-key">Tracking</div>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat">
+      <div class="stat-val">AI</div>
+      <div class="stat-key">Vision Scan</div>
+    </div>
+  </div>
+
+  <!-- DIVIDER -->
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-label">Select Edition</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards">
+
+    <!-- FIELD EDITION -->
+    <a class="card" href="field_index.html">
+      <div class="card-preview">
+        <!-- Mini mockup -->
+        <div class="mockup">
+          <div class="mockup-row">
+            <div class="mockup-dot" style="background:var(--amber)"></div>
+            <div class="mockup-bar am" style="width:60px"></div>
+          </div>
+          <div class="mockup-row">
+            <div class="mockup-dot" style="background:var(--border2)"></div>
+            <div class="mockup-bar" style="width:45px"></div>
+          </div>
+          <div class="mockup-row">
+            <div class="mockup-dot" style="background:var(--border2)"></div>
+            <div class="mockup-bar" style="width:52px"></div>
+          </div>
+          <div style="margin-top:5px;font-size:7px;color:var(--amber);letter-spacing:1px">B1 · P1 · ×3</div>
+        </div>
+
+        <div class="edition-icon">📱</div>
+        <div class="preview-tag">
+          <span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block"></span>
+          Mobile · PWA
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="card-edition">Field Edition</div>
+        <div class="card-title">On-Site<br>Operations</div>
+        <div class="card-desc">Mobile-first companion for officers in the field. Scan, log, and track merchandise directly from your phone during live inspections.</div>
+        <div class="card-features">
+          <div class="card-feature">Session-based inventory workflow</div>
+          <div class="card-feature">AI Vision item scan (camera)</div>
+          <div class="card-feature">Package → Parcel → Line hierarchy</div>
+          <div class="card-feature">Report printing on-site</div>
+          <div class="card-feature">JSON export to desktop platform</div>
+        </div>
+        <div class="card-cta">
+          <div class="card-cta-label">Open Field App →</div>
+          <div class="card-arrow">›</div>
+        </div>
+      </div>
+      <div class="version-tag">field</div>
+    </a>
+
+    <!-- DESKTOP EDITION -->
+    <a class="card" href="main_index.html">
+      <div class="card-preview">
+        <!-- Mini mockup desktop -->
+        <div class="mockup">
+          <div style="display:flex;gap:4px;margin-bottom:6px">
+            <div style="width:3px;height:28px;background:var(--amber);border-radius:1px;opacity:0.6"></div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:3px;justify-content:center">
+              <div class="mockup-bar am" style="width:80%"></div>
+              <div class="mockup-bar" style="width:55%"></div>
+            </div>
+          </div>
+          <div class="mockup-row">
+            <div class="mockup-bar" style="width:100%"></div>
+          </div>
+          <div class="mockup-row">
+            <div class="mockup-bar am" style="width:40%"></div>
+            <div class="mockup-bar" style="width:40%"></div>
+          </div>
+        </div>
+
+        <div class="edition-icon">🖥</div>
+        <div class="preview-tag">
+          <span style="width:5px;height:5px;border-radius:50%;background:var(--blue);display:inline-block"></span>
+          Desktop · Full
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="card-edition">Desktop Edition</div>
+        <div class="card-title">Back-Office<br>Platform</div>
+        <div class="card-desc">Full inventory dashboard for back-office operations. Manage reports, import field data, run reports, and oversee full seizure workflows.</div>
+        <div class="card-features">
+          <div class="card-feature">Report & item management</div>
+          <div class="card-feature">Brand database (full directory)</div>
+          <div class="card-feature">CN category classification</div>
+          <div class="card-feature">Task tracking & status workflow</div>
+          <div class="card-feature">Photo documentation per line</div>
+        </div>
+        <div class="card-cta">
+          <div class="card-cta-label">Open Desktop App →</div>
+          <div class="card-arrow">›</div>
+        </div>
+      </div>
+      <div class="version-tag">desktop</div>
+    </a>
+
+  </div>
+
+  <!-- FOOTER NOTE -->
+  <div class="footer-note">
+    <span>LEPRIT Platform</span>
+    <div class="footer-dot"></div>
+    <span>Field + Desktop Editions</span>
+    <div class="footer-dot"></div>
+    <span>Customs Inventory Platform</span>
+  </div>
+
+</div>
+
+<script>
+  // SHA-256 hash of the password — plaintext never stored here
+  const HASH = 'b1fb76d5475f581b74167b2e0b535cff92e4491371889a7ad8ed3fb20744c6bf';
+  const SESSION_KEY = 'leprit_auth';
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  function unlock() {
+    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch(e) {}
+    const gate = document.getElementById('gate');
+    gate.classList.add('hidden');
+    setTimeout(() => gate.style.display = 'none', 420);
+  }
+
+  async function checkPassword() {
+    const input = document.getElementById('gateInput');
+    const btn = document.getElementById('gateBtn');
+    const err = document.getElementById('gateError');
+    const val = input.value;
+    if (!val) return;
+    btn.disabled = true;
+    btn.textContent = 'Verifying…';
+    const hash = await sha256(val);
+    if (hash === HASH) {
+      err.textContent = '';
+      unlock();
+    } else {
+      input.classList.add('error');
+      err.textContent = 'Invalid access code';
+      btn.textContent = 'Authenticate';
+      btn.disabled = false;
+      setTimeout(() => input.classList.remove('error'), 400);
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  function toggleGateEye() {
+    const input = document.getElementById('gateInput');
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+
+  document.getElementById('gateInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkPassword();
+  });
+
+  // Skip gate if already authenticated this session
+  (function() {
+    try {
+      if (sessionStorage.getItem(SESSION_KEY) === '1') { unlock(); return; }
+    } catch(e) {}
+    document.getElementById('gateInput').focus();
+  })();
+</script>
+</body>
+</html>
