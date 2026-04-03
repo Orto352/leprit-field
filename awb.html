@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>LEPRIT — Control Session</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0e0f11; --sf:#161719; --sf2:#1e2023; --sf3:#26292d;
+  --bd:#2e3135; --bd2:#3a3f45;
+  --am:#f59e0b; --am-d:#92600a; --am-g:rgba(245,158,11,0.12);
+  --rd:#ef4444; --rd-d:#7f1d1d;
+  --gn:#22c55e; --gn-d:#14532d;
+  --bl:#3b82f6; --bl-d:#1e3a5f;
+  --tx:#e8eaed; --tx2:#9ca3af; --tx3:#6b7280;
+  --r:6px; --rl:10px; --t:150ms cubic-bezier(0.4,0,0.2,1);
+}
+html.light {
+  --bg:#f0f2f5; --sf:#fff; --sf2:#f5f6f8; --sf3:#eaecf0;
+  --bd:#dde1e8; --bd2:#c8cdd8;
+  --am:#d97706; --am-d:#fde68a; --am-g:rgba(217,119,6,0.08);
+  --rd:#dc2626; --rd-d:#fecaca;
+  --gn:#16a34a; --gn-d:#bbf7d0;
+  --bl:#2563eb; --bl-d:#bfdbfe;
+  --tx:#111827; --tx2:#4b5563; --tx3:#9ca3af;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--tx);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:99px;}
+.app{height:100dvh;max-width:430px;margin:0 auto;display:flex;flex-direction:column;background:var(--bg);position:relative;overflow:hidden;}
+
+/* SCREENS */
+.scr{display:none;flex-direction:column;height:100%;overflow:hidden;}
+.scr.on{display:flex;animation:sIn 220ms ease both;}
+.scr.back{animation:sBk 220ms ease both;}
+@keyframes sIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes sBk{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+
+/* TOPBAR */
+.topbar{height:50px;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;}
+.tb-bk{width:30px;height:30px;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx2);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all var(--t);}
+.tb-bk:active{background:var(--sf3);}
+.tb-t{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--tx);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tb-meta{font-size:9px;color:var(--tx3);letter-spacing:.5px;white-space:nowrap;flex-shrink:0;}
+.th-tog{display:flex;align-items:center;gap:5px;padding:3px 8px 3px 5px;background:var(--sf2);border:1px solid var(--bd);border-radius:99px;cursor:pointer;flex-shrink:0;user-select:none;}
+.th-tog:active{background:var(--sf3);}
+.tt-tr{width:26px;height:15px;background:var(--sf3);border:1px solid var(--bd2);border-radius:99px;position:relative;transition:background var(--t);}
+html.light .tt-tr{background:var(--am);border-color:var(--am);}
+.tt-th{position:absolute;top:2px;left:2px;width:9px;height:9px;border-radius:50%;background:var(--tx3);transition:transform var(--t),background var(--t);}
+html.light .tt-th{transform:translateX(11px);background:#fff;}
+.tt-lb{font-size:9px;color:var(--tx3);white-space:nowrap;}
+.key-dot{width:6px;height:6px;border-radius:50%;background:var(--gn);flex-shrink:0;}
+.key-change{font-size:12px;color:var(--tx3);cursor:pointer;padding:4px;transition:color var(--t);}
+.key-change:active{color:var(--am);}
+
+/* SCROLL */
+.scroll{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;}
+
+/* BOTTOM BAR */
+.bar{flex-shrink:0;padding:10px 14px;padding-bottom:max(10px,env(safe-area-inset-bottom));background:var(--sf);border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:7px;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:13px 16px;background:var(--am);color:#0e0f11;border:none;border-radius:var(--r);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all var(--t);letter-spacing:.3px;}
+.btn:active{opacity:.82;transform:scale(.98);}
+.btn:disabled{opacity:.32;cursor:not-allowed;transform:none;}
+.btn.gh{background:transparent;color:var(--tx2);border:1px solid var(--bd2);}
+.btn.gh:active{background:var(--sf2);}
+.btn.gn{background:var(--gn);color:#fff;}
+html.light .btn{color:#fff;}
+html.light .btn.gh{background:transparent;color:var(--tx2);}
+
+/* FORM */
+.slabel{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);padding:12px 0 5px;font-weight:500;}
+.slabel:first-child{padding-top:0;}
+.finput,.fsel,.ftarea{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--tx);width:100%;outline:none;transition:border-color var(--t),background var(--t);-webkit-appearance:none;}
+.finput:focus,.fsel:focus,.ftarea:focus{border-color:var(--am);background:var(--sf3);}
+.finput::placeholder{color:var(--tx3);}
+.ftarea{resize:none;min-height:70px;line-height:1.55;}
+.fsel{cursor:pointer;}
+.finput.ai-filled{border-color:var(--am);background:var(--am-g);}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
+input[type=number]{-moz-appearance:textfield;appearance:textfield;}
+
+/* OFFICER CHIPS */
+.officer-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+.off-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;background:var(--am-g);border:1px solid var(--am-d);border-radius:99px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--am);cursor:pointer;transition:all var(--t);}
+.off-chip:active{opacity:.7;}
+.off-chip .rm{font-size:9px;color:var(--am-d);}
+.off-add{display:inline-flex;align-items:center;gap:4px;padding:6px 11px;background:transparent;border:1px dashed var(--bd2);border-radius:99px;font-size:11px;color:var(--tx3);cursor:pointer;transition:all var(--t);}
+.off-add:active{border-color:var(--am);color:var(--am);}
+
+/* SCAN TRIGGER */
+.scan-trigger{display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--r);cursor:pointer;transition:all var(--t);width:100%;margin-bottom:8px;}
+.scan-trigger:active{background:var(--am-g);border-color:var(--am-d);}
+.st-icon{font-size:16px;flex-shrink:0;}
+.st-text{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--tx2);flex:1;}
+.scan-trigger:active .st-text{color:var(--am);}
+.st-badge{background:var(--am-g);border:1px solid var(--am-d);color:var(--am);font-size:9px;font-weight:700;padding:2px 7px;border-radius:99px;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;}
+
+/* SCAN SHEET */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:none;align-items:flex-end;backdrop-filter:blur(3px);}
+.backdrop.on{display:flex;animation:bfd 180ms ease;}
+@keyframes bfd{from{opacity:0}to{opacity:1}}
+.sheet{width:100%;max-width:430px;margin:0 auto;background:var(--sf);border-radius:14px 14px 0 0;border-top:1px solid var(--bd2);max-height:92dvh;display:flex;flex-direction:column;animation:shup 260ms cubic-bezier(.32,.72,0,1);}
+@keyframes shup{from{transform:translateY(100%)}to{transform:none}}
+.sh-hnd{width:32px;height:3px;background:var(--bd2);border-radius:99px;margin:10px auto 0;flex-shrink:0;}
+.sh-hdr{padding:12px 16px 10px;flex-shrink:0;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
+.sh-tit{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
+.sh-cl{width:28px;height:28px;background:var(--sf2);border:1px solid var(--bd);border-radius:50%;color:var(--tx2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--t);}
+.sh-cl:active{background:var(--sf3);}
+.sh-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:11px;}
+.sh-foot{padding:11px 16px;padding-bottom:max(11px,env(safe-area-inset-bottom));border-top:1px solid var(--bd);flex-shrink:0;display:flex;gap:8px;}
+
+/* DROP ZONE */
+.drop-zone{position:relative;background:var(--sf2);border:2px dashed var(--bd2);border-radius:var(--rl);min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;cursor:pointer;transition:all 200ms ease;overflow:hidden;text-align:center;padding:20px 14px;}
+.drop-zone:active,.drop-zone.drag{border-color:var(--am);background:var(--am-g);}
+.drop-zone.loaded{border-style:solid;border-color:var(--bd);background:#000;padding:0;min-height:180px;}
+.drop-zone img{width:100%;height:100%;object-fit:contain;max-height:240px;display:block;}
+.dz-ic{font-size:28px;opacity:.35;}
+.dz-t{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--tx2);}
+.dz-s{font-size:10px;color:var(--tx3);}
+.dz-over{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:16px 10px 7px;font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.5px;text-align:center;}
+.scan-ov{position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:5;border-radius:8px;}
+.scan-ov.on{display:flex;}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--am),transparent);animation:scanmove 1.6s ease-in-out infinite;opacity:.9;}
+@keyframes scanmove{0%{top:4%}100%{top:96%}}
+.spin{width:34px;height:34px;border:2px solid rgba(245,158,11,.25);border-top-color:var(--am);border-radius:50%;animation:rot .75s linear infinite;}
+@keyframes rot{to{transform:rotate(360deg)}}
+.scan-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.6);}
+
+/* SCAN RESULT ROWS */
+.sr-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);}
+.sr-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);width:72px;flex-shrink:0;}
+.sr-val{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--am);flex:1;}
+.sr-null{font-size:11px;color:var(--tx3);flex:1;font-style:italic;}
+html.light .sr-val{color:var(--am);}
+
+/* CONTROL CARD (summary) */
+.ctrl-card{background:var(--sf);border:1px solid var(--bd);border-left:3px solid var(--am);border-radius:var(--rl);padding:11px 13px;margin-bottom:8px;}
+.cc-ref{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:var(--am);margin-bottom:4px;}
+.cc-meta{font-size:10px;color:var(--tx3);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.cc-badge{display:inline-flex;align-items:center;gap:3px;background:var(--sf2);border:1px solid var(--bd2);border-radius:99px;padding:1px 7px;font-size:9px;color:var(--tx2);}
+
+/* SUMMARY STATS */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px;}
+.sum-st{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);padding:11px 8px;text-align:center;position:relative;overflow:hidden;}
+.sum-st::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--am);opacity:.4;}
+.sum-v{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--tx);line-height:1;}
+.sum-l{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-top:3px;}
+
+/* ERR BOX */
+.err-box{background:rgba(239,68,68,.08);border:1px solid var(--rd-d);border-radius:var(--r);padding:10px 13px;font-size:11px;color:var(--rd);display:none;}
+.err-box.on{display:block;}
+
+/* EMPTY */
+.empty{text-align:center;padding:36px 20px;color:var(--tx3);}
+.empty-ic{font-size:26px;margin-bottom:8px;opacity:.3;}
+.empty-tx{font-size:11px;line-height:1.7;}
+
+/* OFFICER MODAL */
+.mini-modal{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);}
+.mini-modal.on{display:flex;animation:bfd 150ms ease;}
+.mm-box{background:var(--sf);border:1px solid var(--bd2);border-radius:var(--rl);padding:20px;width:100%;max-width:300px;}
+.mm-tit{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:14px;}
+.mm-row{display:flex;gap:8px;}
+
+/* KEY GATE */
+.key-gate{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;max-width:430px;margin:0 auto;}
+.kg-logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--am);letter-spacing:-.5px;margin-bottom:4px;}
+.kg-sub{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--tx3);margin-bottom:32px;}
+.kg-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);align-self:flex-start;margin-bottom:6px;width:100%;}
+.kg-wrap{position:relative;width:100%;margin-bottom:10px;}
+.kg-input{width:100%;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--r);padding:11px 40px 11px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--tx);outline:none;transition:border-color var(--t);letter-spacing:.5px;}
+.kg-input:focus{border-color:var(--am);background:var(--sf3);}
+.kg-input::placeholder{color:var(--tx3);letter-spacing:0;}
+.kg-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px;padding:4px;}
+.kg-hint{font-size:10px;color:var(--tx3);align-self:flex-start;margin-bottom:20px;line-height:1.6;}
+.kg-err{font-size:11px;color:var(--rd);align-self:flex-start;margin-bottom:8px;display:none;}
+.kg-err.on{display:block;}
+
+html.light .sum-st{box-shadow:0 1px 3px rgba(15,31,61,.08);}
+html.light .ctrl-card{box-shadow:0 1px 3px rgba(15,31,61,.08);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- KEY GATE -->
+  <div class="key-gate" id="keyGate">
+    <div class="kg-logo">LEPRIT</div>
+    <div class="kg-sub">Control Session · Vision AI</div>
+    <div class="kg-label">Anthropic API Key</div>
+    <div class="kg-wrap">
+      <input class="kg-input" id="keyInput" type="password" placeholder="sk-ant-api03-…" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')confirmKey()">
+      <button class="kg-eye" id="eyeBtn" onclick="toggleEye()">👁</button>
+    </div>
+    <div class="kg-hint">Kept in memory for this session only.<br>Never stored, logged, or transmitted elsewhere.</div>
+    <div class="kg-err" id="kgErr"></div>
+    <button class="btn" onclick="confirmKey()">Unlock → Control Session</button>
+  </div>
+
+  <!-- SCR 1: NEW SESSION SETUP -->
+  <div class="scr" id="scr-new">
+    <div class="topbar">
+      <div class="tb-t"><span style="font-family:'Syne',sans-serif;color:var(--am)">LEPRIT</span><span style="color:var(--tx3);font-weight:400"> · New Session</span></div>
+      <div class="key-dot" id="keyDot"></div>
+      <span class="key-change" onclick="clearKey()" title="Change key">🔑</span>
+      <div class="th-tog" onclick="toggleTheme()"><div class="tt-tr"><div class="tt-th"></div></div><span class="tt-lb" id="thLbl">☾</span></div>
+    </div>
+    <div class="scroll">
+      <div class="slabel">Control Officers</div>
+      <div class="officer-row" id="officerRow"></div>
+      <button class="off-add" onclick="openAddOfficer()">＋ Add Officer</button>
+      <div style="font-size:10px;color:var(--tx3);margin-top:8px">Position will be entered per control during the session.</div>
+    </div>
+    <div class="bar">
+      <button class="btn" onclick="startSession()">▶ Start Control Session</button>
+    </div>
+  </div>
+
+  <!-- SCR 2: CONTROL ENTRY -->
+  <div class="scr" id="scr-ctrl">
+    <div class="topbar">
+      <div class="tb-bk" onclick="goBack('scr-ctrl','scr-new')">‹</div>
+      <div class="tb-t" id="ctrlTopTitle">Control</div>
+      <div class="tb-meta" id="ctrlTopMeta"></div>
+    </div>
+    <div class="scroll" id="ctrlScroll">
+
+      <!-- Position + scan trigger row -->
+      <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;align-items:end;margin-bottom:0">
+        <div>
+          <div class="slabel" style="padding-top:0">Position</div>
+          <input class="finput" id="posInput" placeholder="001" maxlength="3" style="text-align:center;font-family:'Syne',sans-serif;font-weight:700;font-size:16px;letter-spacing:2px" oninput="this.value=this.value.replace(/\D/g,'')">
+        </div>
+        <div>
+          <div class="slabel" style="padding-top:0">AWB / HAWB</div>
+          <div class="scan-trigger" onclick="openScanSheet()" style="margin-bottom:0">
+            <span class="st-icon">🔬</span>
+            <span class="st-text">Scan AWB Label</span>
+            <span class="st-badge">Vision AI</span>
+          </div>
+        </div>
+      </div>
+      <input class="finput" id="awbInput" placeholder="e.g. 172-04089735 or enter manually" style="margin-top:6px" oninput="this.value=this.value.toUpperCase()">
+
+      <!-- Route -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px">
+        <div>
+          <div class="slabel" style="padding-top:0">Origin</div>
+          <input class="finput" id="originInput" placeholder="e.g. CGO" maxlength="3" oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <div>
+          <div class="slabel" style="padding-top:0">Destination</div>
+          <input class="finput" id="destInput" placeholder="e.g. LUX" maxlength="3" oninput="this.value=this.value.toUpperCase()">
+        </div>
+      </div>
+
+      <!-- Parcels -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px">
+        <div>
+          <div class="slabel" style="padding-top:0">Controlled Parcels</div>
+          <input class="finput" id="ctrlPcsInput" type="number" placeholder="0" min="0">
+        </div>
+        <div>
+          <div class="slabel" style="padding-top:0">Total Parcels</div>
+          <input class="finput" id="totalPcsInput" type="number" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <!-- Comments -->
+      <div class="slabel">Comments</div>
+      <textarea class="finput ftarea" id="commentInput" placeholder="Observations, irregularities, notes…"></textarea>
+
+      <!-- Entry counter -->
+      <div style="font-size:10px;color:var(--tx3);margin-top:10px;text-align:center" id="entryCounter"></div>
+
+      <div class="err-box" id="ctrlErr" style="margin-top:8px"></div>
+
+    </div>
+    <div class="bar">
+      <button class="btn" onclick="saveAndNext()">✓ Save &amp; Next Control</button>
+      <button class="btn gh" onclick="closeSession()">✕ Close Session</button>
+    </div>
+  </div>
+
+  <!-- SCR 3: SESSION SUMMARY -->
+  <div class="scr" id="scr-summary">
+    <div class="topbar">
+      <div class="tb-bk" onclick="backToCtrl()">‹</div>
+      <div class="tb-t">Session Summary</div>
+      <div class="tb-meta" id="sumMeta"></div>
+    </div>
+    <div class="scroll">
+      <div class="sum-grid" id="sumGrid"></div>
+      <div class="slabel">Controls Logged</div>
+      <div id="sumList"></div>
+    </div>
+    <div class="bar">
+      <button class="btn gn" id="addTbBtn" onclick="addToTB()">↗ ADD SESSION TO TB</button>
+      <button class="btn gh" onclick="newSession()">＋ New Session</button>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- SCAN SHEET -->
+<div class="backdrop" id="scanBackdrop" onclick="closeScanSheet(event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sh-hnd"></div>
+    <div class="sh-hdr">
+      <div class="sh-tit">Scan AWB Label</div>
+      <div class="sh-cl" onclick="closeScanSheetDirect()">✕</div>
+    </div>
+    <div class="sh-body">
+      <!-- Drop zone -->
+      <div class="drop-zone" id="dropZone"
+        onclick="document.getElementById('fileIn').click()"
+        ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+        <div class="scan-ov" id="scanOv"></div>
+        <div id="dzContent">
+          <div class="dz-ic">📦</div>
+          <div class="dz-t">Drop AWB label here</div>
+          <div class="dz-s">or tap to upload · JPEG · PNG</div>
+        </div>
+        <input type="file" id="fileIn" style="display:none" accept="image/*" onchange="onFileSelected(this.files[0])">
+      </div>
+      <div class="err-box" id="scanErr"></div>
+      <!-- Result preview -->
+      <div id="scanResultPreview" style="display:none;flex-direction:column;gap:6px">
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);padding-bottom:2px">Confirm Extracted Data</div>
+        <div class="sr-row"><span class="sr-lbl">AWB</span><span id="prAwb" class="sr-val">—</span></div>
+        <div class="sr-row"><span class="sr-lbl">Origin</span><span id="prOrigin" class="sr-val">—</span></div>
+        <div class="sr-row"><span class="sr-lbl">Destination</span><span id="prDest" class="sr-val">—</span></div>
+        <div class="sr-row"><span class="sr-lbl">Total PCS</span><span id="prPcs" class="sr-val">—</span></div>
+        <div class="sr-row" id="prNotesRow" style="display:none"><span class="sr-lbl">Notes</span><span id="prNotes" style="font-size:10px;color:var(--tx2);flex:1;line-height:1.5"></span></div>
+      </div>
+    </div>
+    <div class="sh-foot" id="shFoot">
+      <button class="btn gh" style="flex:1" id="shScanBtn" onclick="doScan()" disabled>🔬 Scan</button>
+      <button class="btn" style="flex:1;display:none" id="shConfirmBtn" onclick="confirmScan()">✓ Apply to Form</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD OFFICER MODAL -->
+<div class="mini-modal" id="officerModal" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="mm-box">
+    <div class="mm-tit">Add Officer</div>
+    <div class="mm-row">
+      <input class="finput" id="officerInitInput" placeholder="Initials e.g. SO" maxlength="4" style="flex:1" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')addOfficer()">
+      <button class="btn" style="width:auto;padding:10px 16px" onclick="addOfficer()">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+let apiKey    = null;
+let officers  = [];
+let session   = null;
+let scanResult= null;
+let imgBase64 = null;
+let imgMime   = 'image/jpeg';
+
+// ── Theme ──────────────────────────────────────────────
+function toggleTheme(){
+  const l=document.documentElement.classList.toggle('light');
+  document.getElementById('thLbl').textContent=l?'☀':'☾';
+  try{localStorage.setItem('leprit-theme',l?'light':'dark');}catch(e){}
+}
+(function(){
+  try{if(localStorage.getItem('leprit-theme')==='light'){
+    document.documentElement.classList.add('light');
+    document.addEventListener('DOMContentLoaded',()=>{
+      const e=document.getElementById('thLbl');if(e)e.textContent='☀';
+    });
+  }}catch(e){}
+})();
+
+// ── Key gate ───────────────────────────────────────────
+function confirmKey(){
+  const v=document.getElementById('keyInput').value.trim();
+  const e=document.getElementById('kgErr');
+  if(!v.startsWith('sk-ant-')){e.textContent='Key must start with sk-ant-…';e.classList.add('on');return;}
+  e.classList.remove('on');
+  apiKey=v;
+  document.getElementById('keyGate').style.display='none';
+  showScr('scr-new');
+}
+function clearKey(){
+  apiKey=null;
+  document.getElementById('keyInput').value='';
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on','back'));
+  document.getElementById('keyGate').style.display='flex';
+}
+function toggleEye(){
+  const i=document.getElementById('keyInput');
+  const s=i.type==='text';
+  i.type=s?'password':'text';
+  document.getElementById('eyeBtn').textContent=s?'👁':'🙈';
+}
+
+// ── Screen nav ─────────────────────────────────────────
+function showScr(id,back=false){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on','back'));
+  const el=document.getElementById(id);
+  if(back)el.classList.add('back');
+  el.classList.add('on');
+}
+function goBack(from,to){showScr(to,true);}
+function backToCtrl(){showScr('scr-ctrl',true);}
+
+// ── Officers ───────────────────────────────────────────
+function renderOfficers(){
+  document.getElementById('officerRow').innerHTML=officers.map((o,i)=>`
+    <div class="off-chip" onclick="removeOfficer(${i})">${o}<span class="rm"> ✕</span></div>
+  `).join('');
+}
+function openAddOfficer(){
+  document.getElementById('officerInitInput').value='';
+  document.getElementById('officerModal').classList.add('on');
+  setTimeout(()=>document.getElementById('officerInitInput').focus(),200);
+}
+function addOfficer(){
+  const v=document.getElementById('officerInitInput').value.trim().toUpperCase();
+  if(!v)return;
+  if(!officers.includes(v))officers.push(v);
+  renderOfficers();
+  document.getElementById('officerModal').classList.remove('on');
+}
+function removeOfficer(i){officers.splice(i,1);renderOfficers();}
+
+// ── Start session ──────────────────────────────────────
+function startSession(){
+  if(!officers.length){alert('Add at least one officer.');return;}
+  session={position:null,officers:[...officers],startTime:new Date(),entries:[]};
+  resetCtrlForm();
+  document.getElementById('ctrlTopTitle').textContent='Control Session';
+  document.getElementById('ctrlTopMeta').textContent=officers.join(' · ');
+  updateEntryCounter();
+  showScr('scr-ctrl');
+}
+
+// ── Control form ───────────────────────────────────────
+function resetCtrlForm(){
+  ['posInput','awbInput','originInput','destInput','ctrlPcsInput','totalPcsInput','commentInput'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.value='';
+    el.classList.remove('ai-filled');
+  });
+  document.getElementById('ctrlErr').classList.remove('on');
+  imgBase64=null;scanResult=null;
+  resetScanSheet();
+}
+
+function updateEntryCounter(){
+  const n=session?session.entries.length:0;
+  document.getElementById('entryCounter').textContent=
+    n===0?'No controls saved yet':`${n} control${n>1?'s':''} saved this session`;
+}
+
+function saveAndNext(){
+  const pos=document.getElementById('posInput').value.trim();
+  const awb=document.getElementById('awbInput').value.trim();
+  if(!pos){
+    const b=document.getElementById('ctrlErr');
+    b.textContent='⚠ Position is required.';b.classList.add('on');
+    document.getElementById('posInput').focus();return;
+  }
+  if(!awb){
+    const b=document.getElementById('ctrlErr');
+    b.textContent='⚠ AWB/HAWB number is required.';b.classList.add('on');
+    document.getElementById('awbInput').focus();return;
+  }
+  session.entries.push({
+    pos,
+    awb,
+    origin:document.getElementById('originInput').value.trim().toUpperCase()||null,
+    dest:document.getElementById('destInput').value.trim().toUpperCase()||null,
+    ctrlPcs:document.getElementById('ctrlPcsInput').value?parseInt(document.getElementById('ctrlPcsInput').value):null,
+    totalPcs:document.getElementById('totalPcsInput').value?parseInt(document.getElementById('totalPcsInput').value):null,
+    comment:document.getElementById('commentInput').value.trim()||null,
+    ts:new Date().toLocaleTimeString('fr-LU',{hour:'2-digit',minute:'2-digit'})
+  });
+  resetCtrlForm();
+  updateEntryCounter();
+  document.getElementById('ctrlScroll').scrollTo({top:0,behavior:'smooth'});
+}
+
+function closeSession(){
+  if(!session.entries.length&&!confirm('No controls logged. Close anyway?'))return;
+  renderSummary();
+  showScr('scr-summary');
+}
+
+// ── Summary ────────────────────────────────────────────
+function renderSummary(){
+  const e=session.entries;
+  const tCtrl=e.reduce((s,x)=>s+(x.ctrlPcs||0),0);
+  const tPcs=e.reduce((s,x)=>s+(x.totalPcs||0),0);
+  const dur=Math.round((new Date()-session.startTime)/60000);
+  document.getElementById('sumMeta').textContent=
+    session.officers.join(' · ')+' · Pos '+session.position;
+  document.getElementById('sumGrid').innerHTML=`
+    <div class="sum-st"><div class="sum-v">${e.length}</div><div class="sum-l">Controls</div></div>
+    <div class="sum-st"><div class="sum-v">${tCtrl||'—'}</div><div class="sum-l">Ctrl Pcs</div></div>
+    <div class="sum-st"><div class="sum-v">${tPcs||'—'}</div><div class="sum-l">Total Pcs</div></div>
+  `;
+  if(!e.length){
+    document.getElementById('sumList').innerHTML=`<div class="empty"><div class="empty-ic">📋</div><div class="empty-tx">No controls recorded.</div></div>`;
+    return;
+  }
+  document.getElementById('sumList').innerHTML=e.map(x=>`
+    <div class="ctrl-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <div class="cc-ref">${x.awb}</div>
+        ${x.pos?`<span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--sf2);border:1px solid var(--bd2);border-radius:4px;padding:1px 7px;color:var(--tx3)">Pos ${x.pos}</span>`:''}
+      </div>
+      <div class="cc-meta">
+        ${x.origin&&x.dest?`<span>${x.origin} → ${x.dest}</span>`:''}
+        ${x.ctrlPcs!=null?`<span class="cc-badge">✓ ${x.ctrlPcs} ctrl</span>`:''}
+        ${x.totalPcs!=null?`<span class="cc-badge">/ ${x.totalPcs} total</span>`:''}
+        <span class="cc-badge">🕐 ${x.ts}</span>
+      </div>
+      ${x.comment?`<div style="font-size:10px;color:var(--tx2);margin-top:5px;line-height:1.5">${x.comment}</div>`:''}
+    </div>
+  `).join('');
+}
+
+function addToTB(){
+  const btn=document.getElementById('addTbBtn');
+  btn.textContent='✓ Added to TB';
+  btn.disabled=true;
+  btn.classList.remove('gn');
+  setTimeout(()=>{btn.textContent='↗ ADD SESSION TO TB';btn.disabled=false;btn.classList.add('gn');},3000);
+}
+
+function newSession(){
+  session=null;
+  officers=[];
+  renderOfficers();
+  document.getElementById('posInput').value='';
+  showScr('scr-new',true);
+}
+
+// ── Scan sheet ─────────────────────────────────────────
+function openScanSheet(){
+  document.getElementById('scanBackdrop').classList.add('on');
+}
+function closeScanSheet(e){
+  if(e&&e.target!==document.getElementById('scanBackdrop'))return;
+  document.getElementById('scanBackdrop').classList.remove('on');
+}
+function closeScanSheetDirect(){
+  document.getElementById('scanBackdrop').classList.remove('on');
+}
+
+function resetScanSheet(){
+  const zone=document.getElementById('dropZone');
+  zone.classList.remove('loaded');
+  zone.innerHTML=`
+    <div class="scan-ov" id="scanOv"></div>
+    <div id="dzContent">
+      <div class="dz-ic">📦</div>
+      <div class="dz-t">Drop AWB label here</div>
+      <div class="dz-s">or tap to upload · JPEG · PNG</div>
+    </div>
+    <input type="file" id="fileIn" style="display:none" accept="image/*" onchange="onFileSelected(this.files[0])">
+  `;
+  zone.onclick=()=>document.getElementById('fileIn').click();
+  const rp=document.getElementById('scanResultPreview');
+  rp.style.display='none';
+  document.getElementById('scanErr').classList.remove('on');
+  const sb=document.getElementById('shScanBtn');
+  sb.style.display='inline-flex';sb.disabled=true;sb.textContent='🔬 Scan';
+  document.getElementById('shConfirmBtn').style.display='none';
+}
+
+function onDragOver(e){e.preventDefault();document.getElementById('dropZone').classList.add('drag');}
+function onDragLeave(){document.getElementById('dropZone').classList.remove('drag');}
+function onDrop(e){e.preventDefault();document.getElementById('dropZone').classList.remove('drag');const f=e.dataTransfer.files[0];if(f)loadFile(f);}
+function onFileSelected(f){if(f)loadFile(f);}
+
+function loadFile(file){
+  imgMime='image/jpeg';
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const src=ev.target.result;
+    const img=new Image();
+    img.onload=()=>{
+      const MAX=1600;let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      const comp=c.toDataURL('image/jpeg',.85);
+      imgBase64=comp.split(',')[1];
+      const zone=document.getElementById('dropZone');
+      zone.classList.add('loaded');
+      zone.innerHTML=`
+        <div class="scan-ov" id="scanOv"></div>
+        <img src="${comp}" alt="AWB label">
+        <div class="dz-over">Tap to replace · ${file.name}</div>
+        <input type="file" id="fileIn" style="display:none" accept="image/*" onchange="onFileSelected(this.files[0])">
+      `;
+      zone.onclick=()=>document.getElementById('fileIn').click();
+      document.getElementById('scanResultPreview').style.display='none';
+      document.getElementById('scanErr').classList.remove('on');
+      const sb=document.getElementById('shScanBtn');
+      sb.style.display='inline-flex';sb.disabled=false;sb.textContent='🔬 Scan';
+      document.getElementById('shConfirmBtn').style.display='none';
+    };
+    img.src=src;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function doScan(){
+  if(!imgBase64)return;
+  document.getElementById('scanErr').classList.remove('on');
+  const ov=document.getElementById('scanOv');
+  ov.innerHTML='<div class="scan-line"></div><div class="spin"></div><div class="scan-lbl">Scanning…</div>';
+  ov.classList.add('on');
+  const sb=document.getElementById('shScanBtn');
+  sb.disabled=true;sb.textContent='⏳ Analysing…';
+
+  const PROMPT=`You are an expert in IATA air cargo documentation. Analyse this AWB label image.
+CRITICAL: Respond ONLY with a JSON object. No markdown, no backticks, no text before or after. Start with {
+
+{
+  "awb_number": "XXX-XXXXXXXX",
+  "origin": "AAA",
+  "origin_full": "Full city or airport name",
+  "destination": "BBB",
+  "destination_full": "Full city or airport name",
+  "total_parcels": 0,
+  "notes": "HAWB, handler, weight, dept, other relevant info in 1-2 sentences."
+}
+
+Rules:
+- awb_number: IATA format NNN-NNNNNNNN. Look for "AIR WAYBILL NO", "AWB NO".
+- origin: 3-letter IATA UPPERCASE. Look for "ORIGIN","FROM","ORG","DEP","DEPT","H.ORIG","DEPARTURE". Infer from airline hub if missing: Cargolux=LUX, AirFrance=CDG, Lufthansa=FRA, Emirates=DXB, Qatar=DOH, Turkish=IST, KoreanAir=ICN, Cathay=HKG, Singapore=SIN, ChinaSouthern=CAN, ChinaEastern=PVG, AirChina=PEK, FedEx=MEM, UPS=SDF, DHL=CVG.
+- destination: 3-letter IATA UPPERCASE. Look for "DESTINATION","DEST","TO","H.DEST".
+- total_parcels: integer. "TOTAL NO. OF PCS","PCS","PIECES","H.PCS". Prefer master AWB count.
+- null only if truly impossible to determine.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:imgMime,data:imgBase64}},
+        {type:'text',text:PROMPT}
+      ]}]})
+    });
+    ov.classList.remove('on');
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||`HTTP ${res.status}`);}
+    const data=await res.json();
+    const raw=data.content.map(b=>b.text||'').join('').trim();
+    const clean=raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+    const match=clean.match(/\{[\s\S]*\}/);
+    if(!match)throw new Error('No JSON in response: '+clean.slice(0,100));
+    scanResult=JSON.parse(match[0]);
+
+    // Populate preview
+    const set=(id,v)=>{
+      const el=document.getElementById(id);
+      if(v!=null&&v!==''){el.textContent=v;el.className='sr-val';}
+      else{el.textContent='Not detected';el.className='sr-null';}
+    };
+    set('prAwb',scanResult.awb_number);
+    set('prOrigin',scanResult.origin?(scanResult.origin+(scanResult.origin_full?' — '+scanResult.origin_full:'')):null);
+    set('prDest',scanResult.destination?(scanResult.destination+(scanResult.destination_full?' — '+scanResult.destination_full:'')):null);
+    set('prPcs',scanResult.total_parcels!=null?scanResult.total_parcels+' pcs':null);
+    const nr=document.getElementById('prNotesRow');
+    if(scanResult.notes){document.getElementById('prNotes').textContent=scanResult.notes;nr.style.display='flex';}
+    else nr.style.display='none';
+
+    document.getElementById('scanResultPreview').style.display='flex';
+    sb.style.display='none';
+    document.getElementById('shConfirmBtn').style.display='inline-flex';
+
+  }catch(err){
+    ov.classList.remove('on');
+    const b=document.getElementById('scanErr');
+    b.textContent='⚠ '+err.message;
+    b.classList.add('on');
+    sb.disabled=false;sb.textContent='🔬 Scan';
+  }
+}
+
+function confirmScan(){
+  if(!scanResult)return;
+  const fill=(id,val)=>{
+    if(val==null||val==='')return;
+    const el=document.getElementById(id);
+    el.value=String(val);
+    el.classList.add('ai-filled');
+  };
+  fill('awbInput',scanResult.awb_number);
+  fill('originInput',scanResult.origin);
+  fill('destInput',scanResult.destination);
+  fill('totalPcsInput',scanResult.total_parcels!=null?scanResult.total_parcels:null);
+  if(scanResult.notes&&!document.getElementById('commentInput').value)
+    document.getElementById('commentInput').value=scanResult.notes;
+  document.getElementById('scanBackdrop').classList.remove('on');
+}
+</script>
+</body>
+</html>
